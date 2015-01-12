@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('chatserver:server');
 var http = require('http');
+var io = require('socket.io')(server);
 
 /**
  * Get port from environment and store in Express.
@@ -28,6 +29,14 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+server.on('connection', function (socket) {
+  console.log('asdf');
+  socket.emit('news', { hello: 'world' });
+  socket.on('my other event', function (data) {
+    console.log(data);
+  });
+});
 
 /**
  * Event listener for HTTP server "error" event.
