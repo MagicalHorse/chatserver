@@ -5,14 +5,23 @@ module.exports = function() {
     var Room = new mongoose.Schema({
           _id             : { type: String, index: {unique: true} }
         , title           : { type: String }
+        , owner           : { type: String }
         , creationDate    : { type: Date, default: Date.now }
         , messageCount    : {type: Number, default: 0 }
         , usersCount     : {type: Number, default: 0 }
+        , users           : [{ type: String }]
     });
 
     Room.statics.exist = function(roomid, callback) {
         RoomModel.count({_id: roomid}, callback);
     };
+
+    Room.statics.belongsTo = function(userId, callback){
+        RoomModel
+        .where('owner', userId)
+        .sort('creationDate')
+        .exec(callback);
+    }
 
     Room.post('remove', function() {
         var MessageModel = model.mongoose.model('Message');

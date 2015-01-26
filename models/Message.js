@@ -6,7 +6,7 @@ module.exports = function() {
     var Message = new mongoose.Schema({
         roomId      : { type: String, index: true }
       , fromUserId  : { type: Number, index: true }
-      , toUserId    : { type: Number, index: true }
+      , toUserId  : { type: Number, index: true }
       , userName    : String
       , userIp      : String
       , body        : String
@@ -16,16 +16,24 @@ module.exports = function() {
     
     Message.statics.allFrom = function(roomid, date, callback) {
         MessageModel
-        .where('roomid', roomid)
+        .where('roomId', roomid)
         .where('creationDate').gte(date)
         .sort('creationDate')
         .exec(callback);
     };
 
+    Message.statics.last = function(roomid, Num, callback) {
+        MessageModel
+        .where('roomId', roomid)
+        .limit(Num)
+        .sort('-creationDate')
+        .exec(callback);
+    };
+
+
     Message.methods.publicFields = function() {
         return {
-            num         : this.num
-          , username    : this.username
+            userName    : this.userName
           , body        : this.body
           , creationDate        : this.creationDate
         };

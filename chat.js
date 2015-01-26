@@ -4,6 +4,7 @@ var fs = require('fs');
 var Room = require('./models/Room')();
 var Message = require('./models/Message')();
 var Disconnection = require('./models/Disconnection')();
+var Step = require('step');
 
 app.listen(8000);
 
@@ -17,15 +18,49 @@ var group = io.of('/group');
 group.on('connection', function(socket){
   roomId = '';
   userId = '';
+  roomNow = '';
 
-  socket.on('join room', function(room_id) {
-    roomId = room_id;
-    joinRoom(roomId);
+  socket.on('join room', function(room) {
+    roomNow = room;
+    roomId = room.room_id;
+    Step(
+      function joinRoom(){
+        Room.exist(roomId, function(err, count){
+          if(count == 0){
+            var room = new Room({_id: roomId, title: roomNow.title, owner: roomNow.owner, users: roomNow.users});
+            room.save(function(err) {
+              if(err) {
+                console.log(err);
+              } else {
+                //console.log(room);
+              }
+            });
+          }else{
+            //console.log('join room: ' + roomId)
+          }
+        })
+        socket.join(roomId);
+        next(null, roomId)
+      },
+      function sendMessages() {
+        Message.last(roomId, 3, function(err, messages) {
+          if(!err && messages) {
+            //console.log(messages)
+            mess = messages.reverse();
+            mess.forEach(function(msg) {
+              socket.emit("new message", msg.publicFields()); 
+            });
+          }
+        });
+      }
+    )
   })
 
   socket.on('sendMessage', function(msg){
-    saveMessage(msg);
-    socket.to(roomId).emit('new message', msg);
+    if (msg.body.length > 0){
+      saveMessage(msg, roomId);
+      socket.to(roomId).emit('new message', msg);
+    }
   });
 
   socket.on('disconnect', function(){
@@ -56,33 +91,33 @@ group.on('connection', function(socket){
     socket.leave(roomId);
   });
 
-  function joinRoom(room_id){
-    Room.exist(room_id, function(err, count){
-      if(count == 0){
-        var room = new Room({_id: room_id, title: 'test'});
-        room.save(function(err) {
-            if(err) {
-              console.log(err);
-            } else {
-              console.log(room);
-            }
-        });
-      }else{
-        console.log('join exist room: ' + room_id)
-      }
-    })
-    socket.join(room_id);
-  }
 
-  function saveMessage(msg){
-    var message = new Message({fromUserId: msg.fromUserId, toUserId: msg.toUserId, userName: msg.userName, body: msg.body})
+
+  function saveMessage(msg, roomId){
+    var message = new Message({fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: roomId, userName: msg.userName, body: msg.body})
     message.save(function(err) {
       if(err) {
         console.log(err);
       } else {
-        console.log('save' + message.body);
+        console.log('save: ' + message.body);
       }
     });
   }
 
 });
+
+// 获取相关信息
+var infos = io.of('/infos');
+infos.on('connection', function(socket){
+  socket.on('room list', function(userId){
+    Room.belongsTo(userId, function(err, rooms){
+      console.log(rooms);
+      socket.emit('receive room list', rooms);
+    });
+  })
+})
+
+
+
+
+

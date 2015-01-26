@@ -3,7 +3,8 @@ module.exports = function() {
     var mongoose      = require('mongoose');
 
     var Disconnection = new mongoose.Schema({
-          userId          : {type: String}
+          _id             : {type: String, index: {unique: true} }
+        , userId          : {type: String}
         , roomId          : {type: String}
         , disconnectDate  : {type: Date, default: Date.now }
     });
