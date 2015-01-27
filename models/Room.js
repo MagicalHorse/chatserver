@@ -3,12 +3,15 @@ module.exports = function() {
     var mongoose      = require('mongoose');
 
     var Room = new mongoose.Schema({
+        //_id 两种方式：customerId_buyerId, groupId
           _id             : { type: String, index: {unique: true} }
         , title           : { type: String }
         , owner           : { type: String }
+        // type: private / group 私聊/群聊
+        , type            : { type: String }
         , creationDate    : { type: Date, default: Date.now }
         , messageCount    : {type: Number, default: 0 }
-        , usersCount     : {type: Number, default: 0 }
+        , usersCount      : {type: Number, default: 0 }
         , users           : [{ type: String }]
     });
 
@@ -16,9 +19,10 @@ module.exports = function() {
         RoomModel.count({_id: roomid}, callback);
     };
 
-    Room.statics.belongsTo = function(userId, callback){
+    Room.statics.belongsTo = function(userId, type, callback){
         RoomModel
         .where('owner', userId)
+        .where('type', type)
         .sort('creationDate')
         .exec(callback);
     }
