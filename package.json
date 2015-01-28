@@ -6,7 +6,9 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "array": "^0.4.3",
     "connect-redis": "^2.1.0",
+    "emitter-component": "^1.1.1",
     "express": "^4.11.1",
     "http": "0.0.0",
     "mongodb": "^1.4.28",

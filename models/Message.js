@@ -31,6 +31,14 @@ module.exports = function() {
       }
     };
 
+    // 返回全部数据，慎用
+    Message.statics.all = function(roomId, callback) {
+      MessageModel
+      .where('roomId', roomId)
+      .sort('creationDate')
+      .exec(callback);
+    };
+
     Message.statics.unreadCount = function(roomid, disconnectTime, callback){
       MessageModel
       .count({})

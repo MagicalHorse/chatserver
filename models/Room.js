@@ -19,6 +19,12 @@ module.exports = function() {
         RoomModel.count({_id: roomid}, callback);
     };
 
+    Room.statics.find = function(roomid, callback) {
+        RoomModel
+        .where('_id', roomid)
+        .exec(callback);
+    };
+
     Room.statics.belongsTo = function(userId, type, callback){
         RoomModel
         .where('owner', userId)

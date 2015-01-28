@@ -5,14 +5,13 @@ var Room = require('./models/Room')();
 var Message = require('./models/Message')();
 var Disconnection = require('./models/Disconnection')();
 var Step = require('step');
-
+var array = require('array');
 http.listen(8000);
 
-// database connection
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/chatserver');
 
-// 私聊
+// 聊天
 var chat = io.of('/chat');
 chat.on('connection', function(socket){
   currentUserId = '';
@@ -20,13 +19,14 @@ chat.on('connection', function(socket){
   roomNow = '';
   disconnectionTime = '';
   socket.on('join room', function(userId, room) {
+    socket.leave(roomId);
     currentUserId = userId;
     roomId = room.room_id;
     roomNow = room;
     Step(
       function joinRoom(){
-        Room.exist(roomId, function(err, count){
-          if(count == 0){
+        Room.find(roomId, function(err, res){
+          if(res.length == 0){
             var room = new Room({_id: roomId, 
                                title: roomNow.title, 
                                owner: roomNow.owner, 
@@ -36,19 +36,22 @@ chat.on('connection', function(socket){
               if(err) {
                 console.log(err);
               } else {
-                //console.log(room);
               }
             });
           }else{
-            //console.log('join room: ' + roomId)
+            r = res[0]
+            if (!array(r.users).has(userId.toString())){
+              r.users.push(userId);
+              r.save();
+            }
           }
         })
         socket.join(roomId);
         // 是否需要广播新人加入
-        console.log(currentUserId + ' join')
-        next(null, roomId);
+        console.log(currentUserId + ' join');
+        this();
       },
-      function sendMessages(){
+      function sendUnreadMessages(){
         Disconnection.of(currentUserId, roomId, function(err, disconnection){
           if(!err && disconnection.length > 0) {
             disconnectionTime = disconnection[0].disconnectDate
@@ -73,11 +76,14 @@ chat.on('connection', function(socket){
               }
             });
           }else{
-            Message.allFrom(roomId, null, function(err, messages) {
-              messages.forEach(function(msg) {
-                socket.emit("new message", msg.publicFields()); 
+            //首次登录
+            if (roomNow.owner == currentUserId){
+              Message.all(roomId, function(err, messages) {
+                messages.forEach(function(msg) {
+                  socket.emit("new message", msg.publicFields()); 
+                });
               });
-            });
+            }
           }
         });
       }
@@ -85,7 +91,7 @@ chat.on('connection', function(socket){
   });
   socket.on('sendMessage', function(msg){
     if (msg.body.length > 0){
-      var message = new Message({fromUserId: msg.fromUserId, 
+      var message = new Message({  fromUserId: msg.fromUserId, 
                                    toUserId: msg.toUserId, 
                                    roomId: roomId, 
                                    userName: msg.userName, 
@@ -127,91 +133,6 @@ chat.on('connection', function(socket){
     });
     socket.leave(roomId);
   }); // end of disconnect
-});
-
-// 群组聊天
-var group = io.of('/group');
-group.on('connection', function(socket){
-  roomId = '';
-  userId = '';
-  roomNow = '';
-
-  socket.on('join room', function(room) {
-    roomNow = room;
-    roomId = room.room_id;
-    Step(
-      function joinRoom(){
-        Room.exist(roomId, function(err, count){
-          if(count == 0){
-            var room = new Room({_id: roomId, 
-                               title: roomNow.title, 
-                               owner: roomNow.owner, 
-                                type: roomNow.type,
-                               users: roomNow.users});
-            room.save(function(err) {
-              if(err) {
-                console.log(err);
-              } else {
-                //console.log(room);
-              }
-            });
-          }else{
-            //console.log('join room: ' + roomId)
-          }
-        })
-        socket.join(roomId);
-        next(null, roomId)
-      },
-      function sendMessages() {
-        // 发送未读消息，或者最后几条聊天记录
-        Message.last(roomId, 3, function(err, messages) {
-          if(!err && messages) {
-            //console.log(messages)
-            mess = messages.reverse();
-            mess.forEach(function(msg) {
-              socket.emit("new message", msg.publicFields()); 
-            });
-          }
-        });
-      }
-    )
-  })
-
-  socket.on('sendMessage', function(msg){
-    if (msg.body.length > 0){
-      saveMessage(msg, roomId);
-      socket.to(roomId).emit('new message', msg);
-    }
-  });
-
-  socket.on('disconnect', function(){
-    Disconnection.of(userId, roomId, function(err, disconnection){
-      if(err) {
-        console.log(err);
-      } else {
-        if(disconnection.length > 0) {
-          disconnection[0].update({disconnectDate: Date.now()}, function(err){
-            if(err) {
-              console.log('update err: ' + err);
-            } else {
-              console.log('updated disconnection');
-            }
-          });
-        } else {
-          disconnection = new Disconnection({userId: userId, roomId: roomId, disconnectDate: Date.now()});
-          disconnection.save(function(err) {
-            if(err) {
-              console.log(err);
-            } else {
-              console.log('save disconnection');
-            }
-          });
-        }
-      }
-    });
-    socket.leave(roomId);
-  });
-
 });
 
 // 获取相关信息
