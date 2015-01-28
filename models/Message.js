@@ -40,10 +40,16 @@ module.exports = function() {
     };
 
     Message.statics.unreadCount = function(roomid, disconnectTime, callback){
-      MessageModel
-      .count({})
-      .where('creationDate').gte(disconnectTime)
-      .exec(callback);
+      if (disconnectTime == ''){
+        MessageModel
+        .count({})
+        .exec(callback);
+      }else{
+        MessageModel
+        .count({})
+        .where('creationDate').gte(disconnectTime)
+        .exec(callback);
+      }
     }
 
     Message.statics.last = function(roomid, Num, callback) {

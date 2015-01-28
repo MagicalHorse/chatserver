@@ -13,11 +13,13 @@ mongoose.connect('mongodb://localhost/chatserver');
 
 // 聊天
 var chat = io.of('/chat');
+var currentUserId = '',
+    roomId = '',
+    roomNow = '',
+    disconnectionTime = '',
+    socket = '';
 chat.on('connection', function(socket){
-  currentUserId = '';
-  roomId = '';
-  roomNow = '';
-  disconnectionTime = '';
+
   socket.on('join room', function(userId, room) {
     socket.leave(roomId);
     currentUserId = userId;
@@ -138,6 +140,7 @@ chat.on('connection', function(socket){
 // 获取相关信息
 var infos = io.of('/infos');
 infos.on('connection', function(socket){
+
   socket.on('private room list', function(userId){
     Room.belongsTo(userId, 'private', function(err, rooms){
       rooms.forEach(function(room){
@@ -147,15 +150,27 @@ infos.on('connection', function(socket){
             Disconnection.of(userId, room._id, this.parallel());
           },
           function(err, lastMessage, disconnect){
-            Message.unreadCount(room._id, disconnect[0].disconnectDate, function(err, count){
-              console.log(count);
-              socket.emit('receive room', room, lastMessage[0], count);
-            });
+            console.log(disconnect);
+            if (disconnect.length == 0){
+              if (room.owner == userId){
+                Message.unreadCount(room._id, '', function(err, count){
+                  console.log(count);
+                  socket.emit('receive room', room, lastMessage[0], count);
+                });
+              }
+            }else{
+              Message.unreadCount(room._id, disconnect[0].disconnectDate, function(err, count){
+                console.log(count);
+                socket.emit('receive room', room, lastMessage[0], count);
+              });
+            }
           }
         )
       })
     });
-  })
+  });
+
+
 })
 
 
