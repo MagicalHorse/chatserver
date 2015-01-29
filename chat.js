@@ -1,30 +1,73 @@
-var http = require('http').createServer()
-var io = require('socket.io')(http);
+var http = require('http');
+var request = require("request");
+var cookieParser = require('cookie-parser')
 var fs = require('fs');
 var Room = require('./models/Room')();
 var Message = require('./models/Message')();
-var Disconnection = require('./models/Disconnection')();
+var Status = require('./models/Status')();
 var Step = require('step');
 var array = require('array');
-http.listen(8000);
-
+var bodyParser = require('body-parser');
+var crypto = require('crypto');
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/chatserver');
 
-// 聊天
+var connectRoute = require('connect-route');
+    connect = require('connect'),
+    app = connect();
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+var server = http.createServer(app)
+server.listen(8000)
+var io = require('socket.io')(server);
 var chat = io.of('/chat');
-var currentUserId = '',
-    roomId = '',
-    roomNow = '',
-    disconnectionTime = '',
-    socket = '';
+
 chat.on('connection', function(socket){
 
+  var currentUserId = '',
+      roomId = '',
+      roomNow = '',
+      disconnectionTime = '',
+      sessionId = '',
+      token = '',
+      signValue = '';
+
   socket.on('join room', function(userId, room) {
-    socket.leave(roomId);
     currentUserId = userId;
     roomId = room.room_id;
     roomNow = room;
+    sessionId = room.sessionId;
+    token = room.token;
+    signValue = room.signValue;
+
+    //记录join room time
+    Status.of(currentUserId, roomId, function(err, status){
+      if(err) {
+        console.log(err);
+      } else {
+        if(status.length > 0) {
+          status[0].update({connectDate: Date.now()}, function(err){
+            if(err) {
+              console.log('update err: ' + err);
+            } else {
+              console.log(currentUserId + ' connect');
+            }
+          });
+        } else {
+          status = new Status({userId: currentUserId, roomId: roomId, connectDate: Date.now()});
+          status.save(function(err) {
+            if(err) {
+              console.log(err);
+            } else {
+              console.log(currentUserId + ' connect this room first time');
+            }
+          });
+        }
+      }
+    });
+
     Step(
       function joinRoom(){
         Room.find(roomId, function(err, res){
@@ -50,11 +93,12 @@ chat.on('connection', function(socket){
         })
         socket.join(roomId);
         // 是否需要广播新人加入
+        socket.to(roomId).emit('broadcast newer', room.userName);
         console.log(currentUserId + ' join');
         this();
       },
       function sendUnreadMessages(){
-        Disconnection.of(currentUserId, roomId, function(err, disconnection){
+        Status.of(currentUserId, roomId, function(err, disconnection){
           if(!err && disconnection.length > 0) {
             disconnectionTime = disconnection[0].disconnectDate
             Message.allFrom(roomId, disconnectionTime, function(err, messages) {
@@ -92,6 +136,31 @@ chat.on('connection', function(socket){
     )//end of step
   });
   socket.on('sendMessage', function(msg){
+    // 客户第一次发消息时，检测买手是否在线
+    if (msg.firstMsg == 1 && msg.fromUserType == 'customer'){
+      Status.of(msg.toUserId, roomId, function(err, status){
+        console.log(status[0].disconnectDate > status[0].connectDate);
+        if (status.length == 0 || (status[0].disconnectDate > status[0].connectDate)){
+          console.log(signValue);
+          console.log('发送通知消息');
+          var querystring = "sign=" + signValue + '&client_version=2.3&channel=html5&uid=' + sessionId + '&token=' + token;
+          var options = {
+            uri: 'http://123.57.77.86:8080/api/customer/Detail?' + querystring + '?toUserId=' + msg.toUserId + '?redirect=/buyer',
+            method: 'POST',
+            multipart: [
+              {
+                'content-type': 'application/json',
+                body: JSON.stringify({})
+              }
+            ]
+          }
+          request(options, function(error, response, body){
+            res = JSON.parse(response.body).isSuccessful;
+            console.log(res);
+          });
+        }
+      });
+    }
     if (msg.body.length > 0){
       var message = new Message({  fromUserId: msg.fromUserId, 
                                    toUserId: msg.toUserId, 
@@ -109,12 +178,12 @@ chat.on('connection', function(socket){
     }
   });
   socket.on('disconnect', function(){
-    Disconnection.of(currentUserId, roomId, function(err, disconnection){
+    Status.of(currentUserId, roomId, function(err, status){
       if(err) {
         console.log(err);
       } else {
-        if(disconnection.length > 0) {
-          disconnection[0].update({disconnectDate: Date.now()}, function(err){
+        if(status.length > 0) {
+          status[0].update({disconnectDate: Date.now()}, function(err){
             if(err) {
               console.log('update err: ' + err);
             } else {
@@ -122,8 +191,8 @@ chat.on('connection', function(socket){
             }
           });
         } else {
-          disconnection = new Disconnection({userId: currentUserId, roomId: roomId, disconnectDate: Date.now()});
-          disconnection.save(function(err) {
+          status = new Status({userId: currentUserId, roomId: roomId, disconnectDate: Date.now()});
+          status.save(function(err) {
             if(err) {
               console.log(err);
             } else {
@@ -147,7 +216,7 @@ infos.on('connection', function(socket){
         Step(
           function(){
             Message.last(room._id, 1, this.parallel());
-            Disconnection.of(userId, room._id, this.parallel());
+            Status.of(userId, room._id, this.parallel());
           },
           function(err, lastMessage, disconnect){
             console.log(disconnect);
@@ -172,6 +241,3 @@ infos.on('connection', function(socket){
 
 
 })
-
-
-
