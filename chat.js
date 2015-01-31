@@ -139,10 +139,7 @@ chat.on('connection', function(socket){
     // 客户第一次发消息时，检测买手是否在线
     if (msg.firstMsg == 1 && msg.fromUserType == 'customer'){
       Status.of(msg.toUserId, roomId, function(err, status){
-        console.log(status[0].disconnectDate > status[0].connectDate);
         if (status.length == 0 || (status[0].disconnectDate > status[0].connectDate)){
-          console.log(signValue);
-          console.log('发送通知消息');
           var querystring = "sign=" + signValue + '&client_version=2.3&channel=html5&uid=' + sessionId + '&token=' + token;
           var options = {
             uri: 'http://123.57.77.86:8080/api/customer/Detail?' + querystring + '?toUserId=' + msg.toUserId + '?redirect=/buyer',
