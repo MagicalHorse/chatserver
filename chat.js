@@ -9,6 +9,7 @@ var Step = require('step');
 var array = require('array');
 var bodyParser = require('body-parser');
 var crypto = require('crypto');
+var url = require('url');
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/chatserver');
 
@@ -18,7 +19,47 @@ var connectRoute = require('connect-route');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
+app.use(connectRoute(function (router) {
+  router.get('/unreadCount', function (req, res, next) {
+    var url_parts = url.parse(req.url, true);
+    params = url_parts.query;
+    Status.of(params.user_id, params.room_id, function(err, status){
+      if(err) {
+        console.log(err);
+      } else {
+        if(status.length > 0) {
+          Message.unreadCount(params.room_id, status[0].disconnectDate, function(err, count){
+            res.end(count.toString());
+          })
+        } else {
+          Message.unreadCount(params.room_id, '', function(err, count){
+            res.end(count.toString());
+          })
+        }
+      }
+    });
+  });
+  router.get('/totalUnreadCount', function (req, res, next) {
+    var url_parts = url.parse(req.url, true);
+    params = url_parts.query;
+    Status.lastOf(params.user_id, function(err, status){
+      console.log(status)
+      if(err){
+        console.log(err)
+      }else{
+        if(status.length > 0) {
+          Message.buyerUnreadCount(params.user_id, status[0].disconnectDate, function(err, count){
+            res.end(count.toString());
+          });
+        } else {
+          Message.buyerUnreadCount(params.user_id, '', function(err, count){
+            res.end(count.toString());
+          });
+        } 
+      }
+    });
+  });
+}));
 var server = http.createServer(app)
 server.listen(8000)
 var io = require('socket.io')(server);

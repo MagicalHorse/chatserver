@@ -13,6 +13,14 @@ module.exports = function() {
         StatusModel.where('userId', userId).where('roomId', roomId).exec(callback);
     };
 
+    Status.statics.lastOf = function(userId, callback){
+        StatusModel
+        .where('userId', userId)
+        .sort('-disconnectDate')
+        .limit(1)
+        .exec(callback);
+    }
+
     var StatusModel = mongoose.model('Status', Status);
     return StatusModel;
 }

@@ -33,6 +33,13 @@ module.exports = function() {
         .exec(callback);
     }
 
+    Room.statics.allBelongsTo = function(userId, callback){
+        RoomModel
+        .where('owner', userId)
+        .sort('creationDate')
+        .exec(callback);
+    }
+
     Room.post('remove', function() {
         var MessageModel = model.mongoose.model('Message');
         var CounterModel = model.mongoose.model('Counter');
