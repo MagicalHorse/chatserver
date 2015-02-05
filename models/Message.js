@@ -75,16 +75,11 @@ module.exports = function() {
         .exec(callback);
     };
 
-    Message.statics.lastOne = function(roomid) {
+    Message.statics.lastOne = function(roomid, callback) {
        MessageModel
       .where('roomId', roomid)
       .sort('-creationDate')
-      .exec('findOne', function (err, message) {
-        if (err) return err;
-        if (message) {
-          return message;
-        }
-      });
+      .exec('findOne', callback);
     };
 
     Message.methods.publicFields = function() {

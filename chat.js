@@ -20,6 +20,7 @@ var connectRoute = require('connect-route');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(connectRoute(function (router) {
+  //某人某房间的未读消息数
   router.get('/unreadCount', function (req, res, next) {
     var url_parts = url.parse(req.url, true);
     params = url_parts.query;
@@ -39,6 +40,7 @@ app.use(connectRoute(function (router) {
       }
     });
   });
+  //某人所有未读消息数
   router.get('/totalUnreadCount', function (req, res, next) {
     var url_parts = url.parse(req.url, true);
     params = url_parts.query;
@@ -59,6 +61,20 @@ app.use(connectRoute(function (router) {
       }
     });
   });
+  //最后一人留言
+  router.get('/lastMsg', function (req, res, next) {
+    var url_parts = url.parse(req.url, true);
+    params = url_parts.query;
+    Message.lastOne(params.room_id, function(err, msg){
+      if (msg != null){
+        result = {userName: msg.userName, body: msg.body, time: msg.creationDate};
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(result));
+        res.end();
+      }
+    });
+  });
+
 }));
 var server = http.createServer(app)
 server.listen(8000)
@@ -247,7 +263,6 @@ chat.on('connection', function(socket){
 // 获取相关信息
 var infos = io.of('/infos');
 infos.on('connection', function(socket){
-
   socket.on('private room list', function(userId){
     Room.belongsTo(userId, 'private', function(err, rooms){
       rooms.forEach(function(room){
@@ -277,5 +292,12 @@ infos.on('connection', function(socket){
     });
   });
 
+  socket.on('last msg', function(room_id){
+    Message.lastOne(room_id, function(err, msg){
+      if (msg != null){
+        socket.emit('receive last msg', msg);
+      }
+    });
 
+  }); 
 })
