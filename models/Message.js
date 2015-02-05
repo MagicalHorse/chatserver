@@ -42,10 +42,12 @@ module.exports = function() {
     Message.statics.unreadCount = function(roomid, disconnectTime, callback){
       if (disconnectTime == ''){
         MessageModel
+        .where('roomId', roomid)
         .count({})
         .exec(callback);
       }else{
         MessageModel
+        .where('roomId', roomid)
         .count({})
         .where('creationDate').gte(disconnectTime)
         .exec(callback);

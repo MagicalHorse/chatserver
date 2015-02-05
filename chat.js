@@ -298,6 +298,24 @@ infos.on('connection', function(socket){
         socket.emit('receive last msg', msg);
       }
     });
-
   }); 
+
+  socket.on('unreadCount', function(user_id, room_id){
+    Status.of(user_id, room_id, function(err, status){
+      if(err) {
+        console.log(err);
+      } else {
+        if(status.length > 0) {
+          Message.unreadCount(room_id, status[0].disconnectDate, function(err, count){
+            socket.emit('receive msg count',room_id, count.toString());
+          })
+        } else {
+          Message.unreadCount(room_id, '', function(err, count){
+            socket.emit('receive msg count', room_id, count.toString());
+          })
+        }
+      }
+    });
+
+  });
 })
