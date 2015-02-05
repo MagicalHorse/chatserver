@@ -199,7 +199,7 @@ chat.on('connection', function(socket){
         if (status.length == 0 || (status[0].disconnectDate > status[0].connectDate)){
           var querystring = "sign=" + signValue + '&client_version=2.3&channel=html5&uid=' + sessionId + '&token=' + token;
           var options = {
-            uri: 'http://123.57.77.86:8080/api/customer/Detail?' + querystring + '?toUserId=' + msg.toUserId + '?redirect=/buyer',
+            uri: 'http://123.57.77.86:8080/api/customer/Detail?' + querystring + '&toUserId=' + msg.toUserId + '&text=' + msg.body + '&redirect=/buyer',
             method: 'POST',
             multipart: [
               {
@@ -316,6 +316,24 @@ infos.on('connection', function(socket){
         }
       }
     });
+  });
 
+  socket.on('totalUnreadCount', function(user_id){
+    Status.lastOf(user_id, function(err, status){
+      console.log(status)
+      if(err){
+        console.log(err)
+      }else{
+        if(status.length > 0) {
+          Message.buyerUnreadCount(user_id, status[0].disconnectDate, function(err, count){
+            socket.emit('receive total count', count.toString());
+          });
+        } else {
+          Message.buyerUnreadCount(user_id, '', function(err, count){
+            socket.emit('receive total count', count.toString());
+          });
+        } 
+      }
+    });
   });
 })
