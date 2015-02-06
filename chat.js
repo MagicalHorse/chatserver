@@ -4,7 +4,7 @@ var cookieParser = require('cookie-parser')
 var fs = require('fs');
 var Room = require('./models/Room')();
 var Message = require('./models/Message')();
-var Status = require('./models/Status')();
+var State = require('./models/State')();
 var Step = require('step');
 var array = require('array');
 var bodyParser = require('body-parser');
@@ -24,12 +24,12 @@ app.use(connectRoute(function (router) {
   router.get('/unreadCount', function (req, res, next) {
     var url_parts = url.parse(req.url, true);
     params = url_parts.query;
-    Status.of(params.user_id, params.room_id, function(err, status){
+    State.of(params.user_id, params.room_id, function(err, state){
       if(err) {
         console.log(err);
       } else {
-        if(status.length > 0) {
-          Message.unreadCount(params.room_id, status[0].disconnectDate, function(err, count){
+        if(state.length > 0) {
+          Message.unreadCount(params.room_id, state[0].disconnectDate, function(err, count){
             res.end(count.toString());
           })
         } else {
@@ -44,13 +44,13 @@ app.use(connectRoute(function (router) {
   router.get('/totalUnreadCount', function (req, res, next) {
     var url_parts = url.parse(req.url, true);
     params = url_parts.query;
-    Status.lastOf(params.user_id, function(err, status){
-      console.log(status)
+    State.lastOf(params.user_id, function(err, state){
+      console.log(state)
       if(err){
         console.log(err)
       }else{
-        if(status.length > 0) {
-          Message.buyerUnreadCount(params.user_id, status[0].disconnectDate, function(err, count){
+        if(state.length > 0) {
+          Message.buyerUnreadCount(params.user_id, state[0].disconnectDate, function(err, count){
             res.end(count.toString());
           });
         } else {
@@ -100,12 +100,12 @@ chat.on('connection', function(socket){
     signValue = room.signValue;
 
     //记录join room time
-    Status.of(currentUserId, roomId, function(err, status){
+    State.of(currentUserId, roomId, function(err, state){
       if(err) {
         console.log(err);
       } else {
-        if(status.length > 0) {
-          status[0].update({connectDate: Date.now()}, function(err){
+        if(state.length > 0) {
+          state[0].update({connectDate: Date.now()}, function(err){
             if(err) {
               console.log('update err: ' + err);
             } else {
@@ -113,8 +113,8 @@ chat.on('connection', function(socket){
             }
           });
         } else {
-          status = new Status({userId: currentUserId, roomId: roomId, connectDate: Date.now()});
-          status.save(function(err) {
+          state = new State({userId: currentUserId, roomId: roomId, connectDate: Date.now()});
+          state.save(function(err) {
             if(err) {
               console.log(err);
             } else {
@@ -127,76 +127,20 @@ chat.on('connection', function(socket){
 
     Step(
       function joinRoom(){
-        Room.find(roomId, function(err, res){
-          if(res.length == 0){
-            var room = new Room({_id: roomId, 
-                               title: roomNow.title, 
-                               owner: roomNow.owner, 
-                                type: roomNow.type,
-                               users: roomNow.users});
-            room.save(function(err) {
-              if(err) {
-                console.log(err);
-              } else {
-              }
-            });
-          }else{
-            r = res[0]
-            if (!array(r.users).has(userId.toString())){
-              r.users.push(userId);
-              r.save();
-            }
-          }
-        })
         socket.join(roomId);
-        // 是否需要广播新人加入
+        // 广播新人加入
         socket.to(roomId).emit('broadcast newer', room.userName);
         console.log(currentUserId + ' join');
         this();
-      },
-      function sendUnreadMessages(){
-        Status.of(currentUserId, roomId, function(err, disconnection){
-          if(!err && disconnection.length > 0) {
-            disconnectionTime = disconnection[0].disconnectDate
-            Message.allFrom(roomId, disconnectionTime, function(err, messages) {
-              // 发送未读消息
-              if(!err && messages && messages.length > 0) {
-                //console.log(mess);
-                //mess = messages.reverse();
-                messages.forEach(function(msg) {
-                  socket.emit("new message", msg.publicFields()); 
-                });
-              } else {
-                // 发送最后几条聊天记录
-                Message.last(roomId, 5, function(err, messages) {
-                  if(!err && messages) {
-                    mess = messages.reverse();
-                    mess.forEach(function(msg) {
-                      socket.emit("new message", msg.publicFields()); 
-                    });
-                  }
-                });
-              }
-            });
-          }else{
-            //首次登录
-            if (roomNow.owner == currentUserId){
-              Message.all(roomId, function(err, messages) {
-                messages.forEach(function(msg) {
-                  socket.emit("new message", msg.publicFields()); 
-                });
-              });
-            }
-          }
-        });
       }
+
     )//end of step
   });
   socket.on('sendMessage', function(msg){
     // 客户第一次发消息时，检测买手是否在线
     if (msg.firstMsg == 1 && msg.fromUserType == 'customer'){
-      Status.of(msg.toUserId, roomId, function(err, status){
-        if (status.length == 0 || (status[0].disconnectDate > status[0].connectDate)){
+      State.of(msg.toUserId, roomId, function(err, state){
+        if (state.length == 0 || (state[0].disconnectDate > state[0].connectDate)){
           var querystring = "sign=" + signValue + '&client_version=2.3&channel=html5&uid=' + sessionId + '&token=' + token;
           var options = {
             uri: 'http://123.57.77.86:8080/api/customer/Detail?' + querystring + '&toUserId=' + msg.toUserId + '&text=' + msg.body + '&redirect=/buyer',
@@ -232,12 +176,12 @@ chat.on('connection', function(socket){
     }
   });
   socket.on('disconnect', function(){
-    Status.of(currentUserId, roomId, function(err, status){
+    State.of(currentUserId, roomId, function(err, state){
       if(err) {
         console.log(err);
       } else {
-        if(status.length > 0) {
-          status[0].update({disconnectDate: Date.now()}, function(err){
+        if(state.length > 0) {
+          state[0].update({disconnectDate: Date.now()}, function(err){
             if(err) {
               console.log('update err: ' + err);
             } else {
@@ -245,8 +189,8 @@ chat.on('connection', function(socket){
             }
           });
         } else {
-          status = new Status({userId: currentUserId, roomId: roomId, disconnectDate: Date.now()});
-          status.save(function(err) {
+          state = new State({userId: currentUserId, roomId: roomId, disconnectDate: Date.now()});
+          state.save(function(err) {
             if(err) {
               console.log(err);
             } else {
@@ -269,7 +213,7 @@ infos.on('connection', function(socket){
         Step(
           function(){
             Message.last(room._id, 1, this.parallel());
-            Status.of(userId, room._id, this.parallel());
+            State.of(userId, room._id, this.parallel());
           },
           function(err, lastMessage, disconnect){
             console.log(disconnect);
@@ -301,12 +245,12 @@ infos.on('connection', function(socket){
   }); 
 
   socket.on('unreadCount', function(user_id, room_id){
-    Status.of(user_id, room_id, function(err, status){
+    State.of(user_id, room_id, function(err, state){
       if(err) {
         console.log(err);
       } else {
-        if(status.length > 0) {
-          Message.unreadCount(room_id, status[0].disconnectDate, function(err, count){
+        if(state.length > 0) {
+          Message.unreadCount(room_id, state[0].disconnectDate, function(err, count){
             socket.emit('receive msg count',room_id, count.toString());
           })
         } else {
@@ -319,13 +263,13 @@ infos.on('connection', function(socket){
   });
 
   socket.on('totalUnreadCount', function(user_id){
-    Status.lastOf(user_id, function(err, status){
-      console.log(status)
+    State.lastOf(user_id, function(err, state){
+      console.log(state)
       if(err){
         console.log(err)
       }else{
-        if(status.length > 0) {
-          Message.buyerUnreadCount(user_id, status[0].disconnectDate, function(err, count){
+        if(state.length > 0) {
+          Message.buyerUnreadCount(user_id, state[0].disconnectDate, function(err, count){
             socket.emit('receive total count', count.toString());
           });
         } else {
