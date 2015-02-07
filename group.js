@@ -143,3 +143,26 @@ group.on('connection', function(socket){
             }
           }
         })
+
+
+    if (msg.firstMsg == 1 && msg.fromUserType == 'customer'){
+      State.of(msg.toUserId, roomId, function(err, state){
+        if (state.length == 0 || (state[0].disconnectDate > state[0].connectDate)){
+          var querystring = "sign=" + signValue + '&client_version=2.3&channel=html5&uid=' + sessionId + '&token=' + token;
+          var options = {
+            uri: 'http://123.57.77.86:8080/api/Community/ChatToBuyer?' + querystring + '&toUserId=' + msg.toUserId + '&text=' + msg.body + '&redirect=/buyer',
+            method: 'POST',
+            multipart: [
+              {
+                'content-type': 'application/json',
+                body: JSON.stringify({})
+              }
+            ]
+          }
+          request(options, function(error, response, body){
+            res = JSON.parse(response.body).isSuccessful;
+            console.log(res);
+          });
+        }
+      });
+    }

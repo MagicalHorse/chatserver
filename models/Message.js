@@ -12,6 +12,8 @@ module.exports = function() {
       , userName    : String
       , userIp      : String
       , body        : String
+      // notice 通知类消息
+      , type        : String
       , creationDate        : { type: Date, default: Date.now }
     },
     {safe: undefined});

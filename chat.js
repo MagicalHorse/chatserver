@@ -138,31 +138,11 @@ chat.on('connection', function(socket){
   });
   socket.on('sendMessage', function(msg){
     // 客户第一次发消息时，检测买手是否在线
-    if (msg.firstMsg == 1 && msg.fromUserType == 'customer'){
-      State.of(msg.toUserId, roomId, function(err, state){
-        if (state.length == 0 || (state[0].disconnectDate > state[0].connectDate)){
-          var querystring = "sign=" + signValue + '&client_version=2.3&channel=html5&uid=' + sessionId + '&token=' + token;
-          var options = {
-            uri: 'http://123.57.77.86:8080/api/customer/Detail?' + querystring + '&toUserId=' + msg.toUserId + '&text=' + msg.body + '&redirect=/buyer',
-            method: 'POST',
-            multipart: [
-              {
-                'content-type': 'application/json',
-                body: JSON.stringify({})
-              }
-            ]
-          }
-          request(options, function(error, response, body){
-            res = JSON.parse(response.body).isSuccessful;
-            console.log(res);
-          });
-        }
-      });
-    }
+
     if (msg.body.length > 0){
       var message = new Message({  fromUserId: msg.fromUserId, 
                                    toUserId: msg.toUserId, 
-                                   roomId: roomId, 
+                                   roomId: roomId.toString(), 
                                    userName: msg.userName, 
                                    body: msg.body});
       message.save(function(err) {
