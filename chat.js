@@ -144,6 +144,8 @@ chat.on('connection', function(socket){
                                    toUserId: msg.toUserId, 
                                    roomId: roomId.toString(), 
                                    userName: msg.userName, 
+                                   type: msg.type,
+                                   productId: msg.productId,
                                    body: msg.body});
       message.save(function(err) {
         if(err) {

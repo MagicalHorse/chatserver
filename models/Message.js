@@ -14,6 +14,7 @@ module.exports = function() {
       , body        : String
       // notice 通知类消息
       , type        : String
+      , productId   : Number
       , creationDate        : { type: Date, default: Date.now }
     },
     {safe: undefined});
