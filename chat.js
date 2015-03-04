@@ -11,7 +11,16 @@ var bodyParser = require('body-parser');
 var crypto = require('crypto');
 var url = require('url');
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/chatserver');
+var nconf = require('nconf');
+
+nconf.argv().env();
+console.log('NODE_ENV: ' + nconf.get('ENV'));
+
+if(nconf.get('ENV') == 'production'){
+  mongoose.connect('mongodb://182.92.239.62/chatserver');
+}else{
+  mongoose.connect('mongodb://localhost/chatserver');
+}
 
 var connectRoute = require('connect-route');
     connect = require('connect'),
