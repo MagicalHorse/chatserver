@@ -12,6 +12,9 @@ module.exports = function() {
       , userName    : String
       , userIp      : String
       , body        : String
+      // notice 通知类消息
+      , type        : String
+      , productId   : Number
       , creationDate        : { type: Date, default: Date.now }
     },
     {safe: undefined});
@@ -42,12 +45,29 @@ module.exports = function() {
     Message.statics.unreadCount = function(roomid, disconnectTime, callback){
       if (disconnectTime == ''){
         MessageModel
+        .where('roomId', roomid)
         .count({})
         .exec(callback);
       }else{
         MessageModel
+        .where('roomId', roomid)
         .count({})
         .where('creationDate').gte(disconnectTime)
+        .exec(callback);
+      }
+    }
+
+    Message.statics.buyerUnreadCount = function(buyerid, disconnectTime, callback){
+      if (disconnectTime == ''){
+        MessageModel
+        .where('toUserId', buyerid)
+        .count({})
+        .exec(callback);
+      }else{
+        MessageModel
+        .where('toUserId', buyerid)
+        .where('creationDate').gte(disconnectTime)
+        .count({})
         .exec(callback);
       }
     }
@@ -60,16 +80,11 @@ module.exports = function() {
         .exec(callback);
     };
 
-    Message.statics.lastOne = function(roomid) {
+    Message.statics.lastOne = function(roomid, callback) {
        MessageModel
       .where('roomId', roomid)
       .sort('-creationDate')
-      .exec('findOne', function (err, message) {
-        if (err) return err;
-        if (message) {
-          return message;
-        }
-      });
+      .exec('findOne', callback);
     };
 
     Message.methods.publicFields = function() {
