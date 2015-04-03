@@ -17,7 +17,7 @@ nconf.argv().env();
 console.log('NODE_ENV: ' + nconf.get('ENV'));
 
 if(nconf.get('ENV') == 'production'){
-  mongoose.connect('mongodb://182.92.239.62/chatserver');
+  mongoose.connect('mongodb://123.57.48.42/chatserver');
 }else{
   mongoose.connect('mongodb://localhost/chatserver');
 }
@@ -66,7 +66,7 @@ app.use(connectRoute(function (router) {
           Message.buyerUnreadCount(params.user_id, '', function(err, count){
             res.end(count.toString());
           });
-        } 
+        }
       }
     });
   });
@@ -149,10 +149,10 @@ chat.on('connection', function(socket){
     // 客户第一次发消息时，检测买手是否在线
 
     if (msg.body.length > 0){
-      var message = new Message({  fromUserId: msg.fromUserId, 
-                                   toUserId: msg.toUserId, 
-                                   roomId: roomId.toString(), 
-                                   userName: msg.userName, 
+      var message = new Message({  fromUserId: msg.fromUserId,
+                                   toUserId: msg.toUserId,
+                                   roomId: roomId.toString(),
+                                   userName: msg.userName,
                                    type: msg.type,
                                    productId: msg.productId,
                                    body: msg.body});
@@ -233,7 +233,7 @@ infos.on('connection', function(socket){
         socket.emit('receive last msg', msg);
       }
     });
-  }); 
+  });
 
   socket.on('unreadCount', function(user_id, room_id){
     State.of(user_id, room_id, function(err, state){
@@ -267,7 +267,7 @@ infos.on('connection', function(socket){
           Message.buyerUnreadCount(user_id, '', function(err, count){
             socket.emit('receive total count', count.toString());
           });
-        } 
+        }
       }
     });
   });
