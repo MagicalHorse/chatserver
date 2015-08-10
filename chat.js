@@ -170,12 +170,11 @@ chat.on('connection' ,function(socket){
           console.log(msg.fromUserId + ' : ' + message.body);
           socket.to(roomId).emit('new message', message);//发送给在当前房间用户
           // socket["nsp"]["adapter"]["rooms"][""]
-          Room.find(roomId, function(err, room){
-
+          Room.find(roomId, function(err, res){
             console.log("*************sss")
             console.log(roomId)
-            console.log(room)
-            room = room[0]
+            console.log(res)
+            room = res[0]
             if(room){
               room.users.forEach(function(user_id){
                 if(currentUserId != user_id){
