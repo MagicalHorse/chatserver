@@ -96,6 +96,7 @@ io.adapter(redis({ host: 'localhost', port: 6379 }));
 var chat = io.of('/chat');
 
 chat.on('connection' ,function(socket){
+  
   console.log(socket["nsp"]["adapter"]["rooms"])
   var currentUserId = '',
       roomId = '',
@@ -104,6 +105,9 @@ chat.on('connection' ,function(socket){
       sessionId = '',
       token = '',
       signValue = '';
+  socket.on("online", function(userId){
+    socket.join("online_user_"+userId)
+  })
 
   socket.on('join room', function(userId, room) {
 
@@ -143,7 +147,7 @@ chat.on('connection' ,function(socket){
     Step(
       function joinRoom(){
         socket.join(roomId);
-        socket.join("online_user_"+userId)
+        
         // 广播新人加入
         socket.to(roomId).emit('broadcast newer', room.userName);
         console.log(currentUserId + ' join');
