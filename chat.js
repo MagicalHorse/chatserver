@@ -21,7 +21,7 @@ console.log('NODE_ENV: ' + nconf.get('ENV'));
 if(nconf.get('ENV') == 'production'){
   mongoose.connect('mongodb://123.57.48.42/chatserver');
 }else{
-  mongoose.connect('mongodb://Mhdev:Mhdev_123@182.92.7.70:27017/chatserver');
+  mongoose.connect('mongodb://test:test_123@182.92.7.70:27017/chatserver_develop')
 }
 
 var connectRoute = require('connect-route');
