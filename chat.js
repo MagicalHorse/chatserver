@@ -170,17 +170,21 @@ chat.on('connection' ,function(socket){
           console.log(msg.fromUserId + ' : ' + message.body);
           socket.to(roomId).emit('new message', message);//发送给在当前房间用户
           // socket["nsp"]["adapter"]["rooms"][""]
-          Room.find(roomId, function(room){
+          Room.find(roomId, function(err, room){
+
             console.log("*************sss")
             console.log(roomId)
             console.log(room)
+            room = room[0]
             if(room){
               room.users.forEach(function(user_id){
-                if(socket["nsp"]["adapter"]["rooms"]["online_user_"+user_id] != null){
-                  socket.to("online_user_"+user_id).emit("room message", message)
-                }
-                else{
-                  redis.set("room_message_"+message._id, message)
+                if(currentUserId != user_id){
+                  if(socket["nsp"]["adapter"]["rooms"]["online_user_"+user_id] != null){
+                    socket.to("online_user_"+user_id).emit("room message", message)
+                  }
+                  else{
+                    redis.set("room_message_"+message._id, message)
+                  }
                 }
               })
             }
