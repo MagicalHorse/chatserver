@@ -13,6 +13,7 @@ var url = require('url');
 var mongoose = require('mongoose');
 var nconf = require('nconf');
 var redis  = require('socket.io-redis');
+var redis_client = require("redis").createClient();
 
 
 nconf.argv().env();
@@ -90,7 +91,6 @@ app.use(connectRoute(function (router) {
 var server = http.createServer(app)
 server.listen(8000)
 var io = require('socket.io')(server);
-
 io.adapter(redis({ host: 'localhost', port: 6379 }));
 
 var chat = io.of('/chat');
@@ -186,7 +186,7 @@ chat.on('connection' ,function(socket){
                     socket.to("online_user_"+user_id).emit("room message", message)
                   }
                   else{
-                    redis.set("room_message_"+message._id, message)
+                    redis_client.set("room_message_"+message._id, message)
                   }
                 }
               })
