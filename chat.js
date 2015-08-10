@@ -12,6 +12,8 @@ var crypto = require('crypto');
 var url = require('url');
 var mongoose = require('mongoose');
 var nconf = require('nconf');
+var redis  = require('socket.io-redis');
+
 
 nconf.argv().env();
 console.log('NODE_ENV: ' + nconf.get('ENV'));
@@ -19,7 +21,7 @@ console.log('NODE_ENV: ' + nconf.get('ENV'));
 if(nconf.get('ENV') == 'production'){
   mongoose.connect('mongodb://123.57.48.42/chatserver');
 }else{
-  mongoose.connect('mongodb://localhost/chatserver');
+  mongoose.connect('mongodb://Mhdev:Mhdev_123@182.92.7.70:27017/chatserver');
 }
 
 var connectRoute = require('connect-route');
@@ -88,10 +90,13 @@ app.use(connectRoute(function (router) {
 var server = http.createServer(app)
 server.listen(8000)
 var io = require('socket.io')(server);
+
+io.adapter(redis({ host: 'localhost', port: 6379 }));
+
 var chat = io.of('/chat');
 
-chat.on('connection', function(socket){
-
+chat.on('connection' ,function(socket){
+  console.log(socket["nsp"]["adapter"]["rooms"])
   var currentUserId = '',
       roomId = '',
       roomNow = '',
@@ -101,6 +106,7 @@ chat.on('connection', function(socket){
       signValue = '';
 
   socket.on('join room', function(userId, room) {
+
     currentUserId = userId;
     roomId = room.room_id;
     roomNow = room;
@@ -137,6 +143,7 @@ chat.on('connection', function(socket){
     Step(
       function joinRoom(){
         socket.join(roomId);
+        socket.join("online_user_"+userId)
         // 广播新人加入
         socket.to(roomId).emit('broadcast newer', room.userName);
         console.log(currentUserId + ' join');
@@ -161,7 +168,23 @@ chat.on('connection', function(socket){
           console.log(err);
         } else {
           console.log(msg.fromUserId + ' : ' + message.body);
-          socket.to(roomId).emit('new message', message);
+          socket.to(roomId).emit('new message', message);//发送给在当前房间用户
+          // socket["nsp"]["adapter"]["rooms"][""]
+          Room.find(roomId, function(room){
+            console.log("*************sss")
+            console.log(roomId)
+            console.log(room)
+            if(room){
+              room.users.forEach(function(user_id){
+                if(socket["nsp"]["adapter"]["rooms"]["online_user_"+user_id] != null){
+                  socket.to("online_user_"+user_id).emit("room message", message)
+                }
+                else{
+                  redis.set("room_message_"+message._id, message)
+                }
+              })
+            }
+          })
         }
       });
     }
