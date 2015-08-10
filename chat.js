@@ -189,6 +189,34 @@ chat.on('connection' ,function(socket){
       });
     }
   });
+  socket.on('leaveRoom', function(){
+        console.log("in leaveRoom action")
+    State.of(currentUserId, roomId, function(err, state){
+      if(err) {
+        console.log(err);
+      } else {
+        if(state.length > 0) {
+          state[0].update({disconnectDate: Date.now()}, function(err){
+            if(err) {
+              console.log('update err: ' + err);
+            } else {
+              console.log(currentUserId + ' disconnect');
+            }
+          });
+        } else {
+          state = new State({userId: currentUserId, roomId: roomId, disconnectDate: Date.now()});
+          state.save(function(err) {
+            if(err) {
+              console.log(err);
+            } else {
+              console.log(currentUserId + ' disconnect first time');
+            }
+          });
+        }
+      }
+    });
+    socket.leave(roomId);
+  }); // end of disconnect
   socket.on('disconnect', function(){
     State.of(currentUserId, roomId, function(err, state){
       if(err) {
