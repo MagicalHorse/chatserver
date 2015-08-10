@@ -88,7 +88,7 @@ app.use(connectRoute(function (router) {
 
 }));
 var server = http.createServer(app)
-server.listen(8000)
+server.listen(8001)
 var io = require('socket.io')(server);
 
 io.adapter(redis({ host: 'localhost', port: 6379 }));
