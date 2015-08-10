@@ -249,6 +249,7 @@ chat.on('connection' ,function(socket){
         }
       }
     });
+    socket.leave("online_user_"+currentUserId);
     socket.leave(roomId);
   }); // end of disconnect
 });
