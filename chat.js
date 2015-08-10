@@ -12,7 +12,7 @@ var crypto = require('crypto');
 var url = require('url');
 var mongoose = require('mongoose');
 var nconf = require('nconf');
-var redis  = require('socket.io-redis');
+// var redis  = require('socket.io-redis');
 
 
 nconf.argv().env();
@@ -89,7 +89,7 @@ app.use(connectRoute(function (router) {
 }));
 var server = http.createServer(app)
 server.listen(8000)
-var io = require('socket.io')(server);
+// var io = require('socket.io')(server);
 
 io.adapter(redis({ host: 'localhost', port: 6379 }));
 
