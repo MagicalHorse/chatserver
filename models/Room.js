@@ -12,7 +12,7 @@ module.exports = function() {
         , creationDate    : { type: Date, default: Date.now }
         , messageCount    : {type: Number, default: 0 }
         , usersCount      : {type: Number, default: 0 }
-        , users           : [{ type: String }]
+        , users           : { type: String }
     });
 
     Room.statics.exist = function(roomid, callback) {

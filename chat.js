@@ -176,7 +176,7 @@ chat.on('connection' ,function(socket){
             console.log(res)
             room = res[0]
             if(room){
-              room.users.forEach(function(user_id){
+              eval(room.users).forEach(function(user_id){
                 if(currentUserId != user_id){
                   if(socket["nsp"]["adapter"]["rooms"]["online_user_"+user_id] != null){
                     socket.to("online_user_"+user_id).emit("room message", message)
