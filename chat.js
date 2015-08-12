@@ -13,7 +13,8 @@ var url = require('url');
 var mongoose = require('mongoose');
 var nconf = require('nconf');
 var redis  = require('socket.io-redis');
-var redis_client = require("redis").createClient();
+// redis.createClient(port,host,options)
+var redis_client = require("redis").createClient(6379, "182.92.7.70");
 
 
 nconf.argv().env();
@@ -91,7 +92,7 @@ app.use(connectRoute(function (router) {
 var server = http.createServer(app)
 server.listen(8000)
 var io = require('socket.io')(server);
-io.adapter(redis({ host: 'localhost', port: 6379 }));
+io.adapter(redis({ host: '182.92.7.70', port: 6379 }));
 
 var chat = io.of('/chat');
 
@@ -186,7 +187,10 @@ chat.on('connection' ,function(socket){
                     socket.to("online_user_"+user_id).emit("room message", message)
                   }
                   else{
-                    redis_client.set("room_message_"+message._id, message)
+                    console.log(room.type)
+                    if(room.type == 'private'){
+                      redis_client.sadd("room_message", message._id)
+                    }
                   }
                 }
               })
