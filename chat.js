@@ -114,6 +114,15 @@ chat.on('connection' ,function(socket){
 
     currentUserId = userId;
     roomId = room.room_id;
+    ids = room.room_id.split("_")
+    if(ids.length == 2){
+      if(parseInt(ids[0]) < parseInt(ids[1])){
+        roomId = ids[0]+'_'+ ids[1]
+      }else{
+        roomId = ids[1]+'_'+ ids[0]
+      }
+    }
+    
     roomNow = room;
     sessionId = room.sessionId;
     token = room.token;
