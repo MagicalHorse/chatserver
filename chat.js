@@ -157,7 +157,7 @@ chat.on('connection' ,function(socket){
     Step(
       function joinRoom(){
         socket.join(roomId);
-        
+        socket.join("online_user_"+userId)
         // 广播新人加入
         socket.to(roomId).emit('broadcast newer', room.userName);
         console.log(currentUserId + ' join');
@@ -168,7 +168,11 @@ chat.on('connection' ,function(socket){
   });
   socket.on('sendMessage', function(msg){
     // 客户第一次发消息时，检测买手是否在线
-
+    if(roomId==""){
+      roomId = msg.roomId
+      socket.join(roomId);
+      socket.join("online_user_"+userId)
+    }
     if (msg.body.length > 0){
       var message = new Message({  fromUserId: msg.fromUserId,
                                    toUserId: msg.toUserId,
