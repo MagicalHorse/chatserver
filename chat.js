@@ -198,7 +198,7 @@ chat.on('connection' ,function(socket){
                   else{
                     console.log(room.type)
                     if(room.type == 'private'){
-                      redis_client.sadd("room_message", message._id)
+                      redis_client.sadd("room_message", message)
                     }
                   }
                 }
