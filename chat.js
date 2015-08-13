@@ -174,13 +174,8 @@ chat.on('connection' ,function(socket){
       socket.join("online_user_"+userId)
     }
     if (msg.body.length > 0){
-      var message = new Message({  fromUserId: msg.fromUserId,
-                                   toUserId: msg.toUserId,
-                                   roomId: roomId.toString(),
-                                   userName: msg.userName,
-                                   type: msg.type,
-                                   productId: msg.productId,
-                                   body: msg.body});
+      params_message = {  fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: roomId.toString(), userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body}
+      var message = new Message(params_message);
       message.save(function(err) {
         if(err) {
           console.log(err);
@@ -202,7 +197,7 @@ chat.on('connection' ,function(socket){
                   else{
                     console.log(room.type)
                     if(room.type == 'private'){
-                      redis_client.sadd("room_message", message)
+                      redis_client.sadd("room_message", params_message)
                     }
                   }
                 }
