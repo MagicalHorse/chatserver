@@ -15,6 +15,7 @@ var nconf = require('nconf');
 var redis  = require('socket.io-redis');
 // redis.createClient(port,host,options)
 var redis_client = require("redis").createClient(6379, "182.92.7.70");
+var debug = true;
 
 
 nconf.argv().env();
@@ -106,8 +107,14 @@ chat.on('connection' ,function(socket){
       sessionId = '',
       token = '',
       signValue = '';
+
   socket.on("online", function(userId){
-    socket.join("online_user_"+userId)
+    currentUserId = userId
+    // redis_client.set(socket.id, currentUserId)
+    if(debug == true){
+      socket.emit("server_notice", {action:"online", type: "success"})
+    }
+    socket.join("online_user_"+currentUserId)
   })
 
   socket.on('join room', function(userId, room) {
@@ -157,9 +164,12 @@ chat.on('connection' ,function(socket){
     Step(
       function joinRoom(){
         socket.join(roomId);
-        socket.join("online_user_"+userId)
         // 广播新人加入
         socket.to(roomId).emit('broadcast newer', room.userName);
+        
+        if(debug == true){
+          socket.emit("server_notice", {action:"join room", type: "success"})
+        }
         console.log(currentUserId + ' join');
         this();
       }
@@ -167,11 +177,16 @@ chat.on('connection' ,function(socket){
     )//end of step
   });
   socket.on('sendMessage', function(msg){
+    if(debug == true){
+      console.log("action->   sendMessage")
+      console.log("data->   ")
+      console.log(msg)
+      socket.emit("server_notice", {action:"sendMessage", type: "success"})
+    }
     // 客户第一次发消息时，检测买手是否在线
     if(roomId==""){
       roomId = msg.roomId
       socket.join(roomId);
-      socket.join("online_user_"+userId)
     }
     if (msg.body.length > 0){
       params_message = {  fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: roomId.toString(), userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body}
@@ -209,7 +224,7 @@ chat.on('connection' ,function(socket){
     }
   });
   socket.on('leaveRoom', function(){
-        console.log("in leaveRoom action")
+    console.log("in leaveRoom action")
     State.of(currentUserId, roomId, function(err, state){
       if(err) {
         console.log(err);
@@ -235,6 +250,7 @@ chat.on('connection' ,function(socket){
       }
     });
     socket.leave(roomId);
+    socket.join("online_user_"+currentUserId)
   }); // end of disconnect
   socket.on('disconnect', function(){
     State.of(currentUserId, roomId, function(err, state){
@@ -261,7 +277,6 @@ chat.on('connection' ,function(socket){
         }
       }
     });
-    socket.leave("online_user_"+currentUserId);
     socket.leave(roomId);
   }); // end of disconnect
 });
