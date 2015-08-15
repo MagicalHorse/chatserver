@@ -13,19 +13,18 @@ var url = require('url');
 var mongoose = require('mongoose');
 var nconf = require('nconf');
 var redis  = require('socket.io-redis');
-// redis.createClient(port,host,options)
-var redis_client = require("redis").createClient(6379, "182.92.7.70");
-var debug = true;
 
 
+var config = require("./config")
 nconf.argv().env();
 console.log('NODE_ENV: ' + nconf.get('ENV'));
-
-if(nconf.get('ENV') == 'production'){
-  mongoose.connect('mongodb://123.57.48.42/chatserver');
-}else{
-  mongoose.connect('mongodb://test:test_123@182.92.7.70:27017/chatserver_develop')
-}
+var config_env = config[nconf.get('ENV')]
+var debug = config_env.debug;
+console.log(config_env)
+// redis.createClient(port,host,options)
+var redis_client = require("redis").createClient(config_env.redis.port, config_env.redis.host);
+// mongoose.connect('mongodb://'+config_env.mongodb.username+':'+config_env.mongodb.password+'@'+config_env.mongodb.host +':'+ config_env.mongodb.port+ '/'+ config_env.mongodb.dbname)
+mongoose.connect(config_env.mongodb.host, config_env.mongodb.dbname, config_env.mongodb.port, {"user": config_env.mongodb.username, "pass": config_env.mongodb.password} )
 
 var connectRoute = require('connect-route');
     connect = require('connect'),
@@ -91,15 +90,13 @@ app.use(connectRoute(function (router) {
 
 }));
 var server = http.createServer(app)
-server.listen(8000)
+server.listen(config_env.socket.port)
 var io = require('socket.io')(server);
-io.adapter(redis({ host: '182.92.7.70', port: 6379 }));
+io.adapter(redis({ host: config_env.redis.host, port: config_env.redis.port }));
 
 var chat = io.of('/chat');
 
 chat.on('connection' ,function(socket){
-  
-  console.log(socket["nsp"]["adapter"]["rooms"])
   var currentUserId = '',
       roomId = '',
       roomNow = '',
@@ -110,7 +107,7 @@ chat.on('connection' ,function(socket){
 
   socket.on("online", function(userId){
     currentUserId = userId
-    // redis_client.set(socket.id, currentUserId)
+    console.log("online_user_" + userId)
     if(debug == true){
       socket.emit("server_notice", {action:"online", type: "success"})
     }
@@ -195,13 +192,8 @@ chat.on('connection' ,function(socket){
         if(err) {
           console.log(err);
         } else {
-          console.log(msg.fromUserId + ' : ' + message.body);
-          socket.to(roomId).emit('new message', message);//发送给在当前房间用户
-          // socket["nsp"]["adapter"]["rooms"][""]
+          socket.to(roomId).emit('new message', message);//发送给在当前房间用户]
           Room.find(roomId, function(err, res){
-            console.log("*************sss")
-            console.log(roomId)
-            console.log(res)
             room = res[0]
             if(room){
               eval(room.users).forEach(function(user_id){
@@ -210,9 +202,8 @@ chat.on('connection' ,function(socket){
                     socket.to("online_user_"+user_id).emit("room message", message)
                   }
                   else{
-                    console.log(room.type)
                     if(room.type == 'private'){
-                      redis_client.sadd("room_message", JSON.stringify(params_message))
+                      redis_client.sadd(config_env.redis.message_queue, JSON.stringify(params_message))
                     }
                   }
                 }

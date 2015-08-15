@@ -1,0 +1,62 @@
+{
+  "development":{
+    "debug":true,
+    "redis":{
+      "port":6379,
+      "host":"182.92.7.70",
+      "message_queue": "room_message",
+      "pwd":"test_123"
+    },
+    "mongodb":{
+      "username": "test",
+      "password": "test_123",
+      "host":"182.92.7.70",
+      "port":"27017",
+      "dbname":"chatserver_develop"
+
+    },
+    "socket":{
+      "port":"8001"
+    }
+  },
+  "demo":{
+    "debug":true,
+    "redis":{
+      "port":6379,
+      "host":"182.92.7.70",
+      "message_queue": "room_message",
+      "pwd":"test_123"
+    },
+    "mongodb":{
+      "username": "Mhdev",
+      "password": "Mhdev_123",
+      "host":"182.92.7.70",
+      "port":"27017",
+      "dbname":"chatserver"
+
+    },
+    "socket":{
+      "port":"8000"
+    }
+  },
+  "production":{
+    "debug":false,
+    "redis":{
+      "port":6379,
+      "host":"182.92.7.70",
+      "message_queue": "room_message",
+      "pwd":"test_123"
+    },
+    "mongodb":{
+      "username": "Mhprod",
+      "password": "Mhprod_123",
+      "host":"123.57.48.42",
+      "port":"27017",
+      "dbname":"chatserver"
+
+    },
+    "socket":{
+      "port":"8000"
+    }
+  }
+}
