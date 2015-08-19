@@ -12,19 +12,18 @@ var crypto = require('crypto');
 var url = require('url');
 var mongoose = require('mongoose');
 var nconf = require('nconf');
-var redis  = require('socket.io-redis');
-
+var redis_adapter  = require('socket.io-redis');
+var redis = require("redis");
 var config = require("./config")
 nconf.argv().env();
-console.log(nconf)
-console.log('NODE_ENV: ' + nconf.get('ENV'));
 var config_env = config[nconf.get('ENV')]
 var debug = config_env.debug;
+
+console.log('NODE_ENV: ' + nconf.get('ENV'));
 console.log(config_env)
-// redis.createClient(port,host,options)
-var redis_client = require("redis").createClient(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
-redis_client.auth(config_env.redis.pwd)
-// mongoose.connect('mongodb://'+config_env.mongodb.username+':'+config_env.mongodb.password+'@'+config_env.mongodb.host +':'+ config_env.mongodb.port+ '/'+ config_env.mongodb.dbname)
+
+var redis_client = redis.createClient(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
+
 mongoose.connect(config_env.mongodb.host, config_env.mongodb.dbname, config_env.mongodb.port, {"user": config_env.mongodb.username, "pass": config_env.mongodb.password} )
 
 var connectRoute = require('connect-route');
@@ -93,7 +92,12 @@ app.use(connectRoute(function (router) {
 var server = http.createServer(app)
 server.listen(config_env.socket.port)
 var io = require('socket.io')(server);
-io.adapter(redis({ host: config_env.redis.host, port: config_env.redis.port, auth_pass: config_env.redis.pwd}));
+
+
+var pub = redis(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
+var sub = redis(config_env.redis.port, config_env.redis.host, {detect_buffers: true, auth_pass: config_env.redis.pwd});
+// io.adapter(redis_adapter({ host: config_env.redis.host, port: config_env.redis.port, auth_pass: config_env.redis.pwd}));
+io.adapter(redis_adapter({ pubClient: pub, subClient: sub }));
 
 var chat = io.of('/chat');
 
