@@ -94,8 +94,8 @@ server.listen(config_env.socket.port)
 var io = require('socket.io')(server);
 
 
-var pub = redis(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
-var sub = redis(config_env.redis.port, config_env.redis.host, {detect_buffers: true, auth_pass: config_env.redis.pwd});
+var pub = redis.createClient(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
+var sub = redis.createClient(config_env.redis.port, config_env.redis.host, {detect_buffers: true, auth_pass: config_env.redis.pwd});
 // io.adapter(redis_adapter({ host: config_env.redis.host, port: config_env.redis.port, auth_pass: config_env.redis.pwd}));
 io.adapter(redis_adapter({ pubClient: pub, subClient: sub }));
 
