@@ -23,6 +23,7 @@ var debug = config_env.debug;
 console.log(config_env)
 // redis.createClient(port,host,options)
 var redis_client = require("redis").createClient(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
+redis_client.auth(config_env.redis.pwd)
 // mongoose.connect('mongodb://'+config_env.mongodb.username+':'+config_env.mongodb.password+'@'+config_env.mongodb.host +':'+ config_env.mongodb.port+ '/'+ config_env.mongodb.dbname)
 mongoose.connect(config_env.mongodb.host, config_env.mongodb.dbname, config_env.mongodb.port, {"user": config_env.mongodb.username, "pass": config_env.mongodb.password} )
 
