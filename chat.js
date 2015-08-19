@@ -14,15 +14,15 @@ var mongoose = require('mongoose');
 var nconf = require('nconf');
 var redis  = require('socket.io-redis');
 
-
 var config = require("./config")
 nconf.argv().env();
+console.log(nconf)
 console.log('NODE_ENV: ' + nconf.get('ENV'));
 var config_env = config[nconf.get('ENV')]
 var debug = config_env.debug;
 console.log(config_env)
 // redis.createClient(port,host,options)
-var redis_client = require("redis").createClient(config_env.redis.port, config_env.redis.host);
+var redis_client = require("redis").createClient(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
 // mongoose.connect('mongodb://'+config_env.mongodb.username+':'+config_env.mongodb.password+'@'+config_env.mongodb.host +':'+ config_env.mongodb.port+ '/'+ config_env.mongodb.dbname)
 mongoose.connect(config_env.mongodb.host, config_env.mongodb.dbname, config_env.mongodb.port, {"user": config_env.mongodb.username, "pass": config_env.mongodb.password} )
 
@@ -92,7 +92,7 @@ app.use(connectRoute(function (router) {
 var server = http.createServer(app)
 server.listen(config_env.socket.port)
 var io = require('socket.io')(server);
-io.adapter(redis({ host: config_env.redis.host, port: config_env.redis.port }));
+io.adapter(redis({ host: config_env.redis.host, port: config_env.redis.port, auth_pass: config_env.redis.pwd}));
 
 var chat = io.of('/chat');
 
