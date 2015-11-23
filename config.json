@@ -3,9 +3,9 @@
     "debug":true,
     "redis":{
       "port":6379,
-      "host":"182.92.7.70",
+      "host":"035562f99bb940bb.m.cnbja.kvstore.aliyuncs.com",
       "message_queue": "room_message",
-      "pwd":"test_123"
+      "pwd":"035562f99bb940bb:Devredis123"
     },
     "mongodb":{
       "username": "test",
@@ -23,9 +23,9 @@
     "debug":true,
     "redis":{
       "port":6379,
-      "host":"182.92.7.70",
+      "host":"035562f99bb940bb.m.cnbja.kvstore.aliyuncs.com",
       "message_queue": "room_message",
-      "pwd":"test_123"
+      "pwd":"035562f99bb940bb:Devredis123"
     },
     "mongodb":{
       "username": "Mhdev",
