@@ -4,7 +4,7 @@
     "redis":{
       "port":6379,
       "host":"035562f99bb940bb.m.cnbja.kvstore.aliyuncs.com",
-      "message_queue": "room_message",
+      "message_queue": "development_room_message",
       "pwd":"035562f99bb940bb:Devredis123"
     },
     "mongodb":{
@@ -24,7 +24,7 @@
     "redis":{
       "port":6379,
       "host":"035562f99bb940bb.m.cnbja.kvstore.aliyuncs.com",
-      "message_queue": "room_message",
+      "message_queue": "demo_room_message",
       "pwd":"035562f99bb940bb:Devredis123"
     },
     "mongodb":{
