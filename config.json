@@ -40,7 +40,7 @@
     },
     "socket":{
       "port":"8001"
-    }
+    },
     "apps":{
       "maishouh5":"html5",
       "maishouapp": "maishouapp"
