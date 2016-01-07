@@ -13,6 +13,7 @@ module.exports = function() {
         , messageCount    : {type: Number, default: 0 }
         , usersCount      : {type: Number, default: 0 }
         , users           : { type: String }
+        ,updateTime: { type: Number}
     });
 
     Room.statics.exist = function(roomid, callback) {

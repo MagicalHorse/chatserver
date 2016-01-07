@@ -1,4 +1,27 @@
-{
+{ 
+  "local":{
+    "debug":true,
+    "redis":{
+      "port":6379,
+      "host":"127.0.0.1",
+      "message_queue": "development_room_message",
+      "pwd":""
+    },
+    "mongodb":{
+      "username": "test",
+      "password": "test_123",
+      "host":"182.92.7.70",
+      "port":"27017",
+      "dbname":"chatserver_develop"
+    },
+    "socket":{
+      "port":"8001"
+    },
+    "apps":{
+      "maishouh5":"html5",
+      "maishouapp": "maishouapp"
+    }
+  },
   "development":{
     "debug":true,
     "redis":{
@@ -10,13 +33,17 @@
     "mongodb":{
       "username": "test",
       "password": "test_123",
-      "host":"182.92.7.70",
+      "host":"10.165.68.116",
       "port":"27017",
       "dbname":"chatserver_develop"
 
     },
     "socket":{
       "port":"8001"
+    }
+    "apps":{
+      "maishouh5":"html5",
+      "maishouapp": "maishouapp"
     }
   },
   "demo":{
@@ -30,7 +57,7 @@
     "mongodb":{
       "username": "Mhdev",
       "password": "Mhdev_123",
-      "host":"182.92.7.70",
+      "host":"10.165.68.116",
       "port":"27017",
       "dbname":"chatserver"
 
@@ -50,7 +77,7 @@
     "mongodb":{
       "username": "Mhprod",
       "password": "Mhprod_123",
-      "host":"123.57.48.42",
+      "host":"10.173.20.52",
       "port":"27017",
       "dbname":"chatserver"
 

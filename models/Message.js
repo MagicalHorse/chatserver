@@ -8,13 +8,18 @@ module.exports = function() {
       , fromUserId  : { type: Number, index: true }
       // 群聊时 toUserId 为空
       , toUserId  : { type: Number, index: true }
+      , messageType : { type: Number, index: true }
+      // 0 私聊， 1群聊
+      , isRead : { type: Number, index: true, default: 0 }
+      //0 未读， 1 已读
       // 发消息者的name
       , userName    : String
       , userIp      : String
       , body        : String
       // notice 通知类消息
       , type        : String
-      , productId   : Number
+      , productId   : Number 
+      , user : {}
       , creationDate        : { type: Date, default: Date.now }
     },
     {safe: undefined});
@@ -33,6 +38,13 @@ module.exports = function() {
         .exec(callback);
       }
     };
+
+    Message.statics.changeRead = function(roomid){
+      MessageModel.update({roomId: roomid}, {$set : {isRead: 1}}, {}, function(err){
+        console.log(err)
+      })
+    }
+
 
     // 返回全部数据，慎用
     Message.statics.all = function(roomId, callback) {
