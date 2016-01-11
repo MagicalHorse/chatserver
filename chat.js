@@ -142,6 +142,8 @@ chat.on('connection' ,function(socket){
       function joinRoom(){
         redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
         socket.join(socket.roomId);
+
+        console.log(socket)
         Message.changeRead(socket.roomId)
 
         // 广播新人加入
@@ -169,6 +171,10 @@ chat.on('connection' ,function(socket){
       socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "please call join room first" })
       return false
     }
+
+    console.log(socket)
+    console.log("********************")
+    console.log(chat)
 
 
     if(msg.fromUserId == null || msg.toUserId==null || msg.messageType == null){
