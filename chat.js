@@ -218,7 +218,7 @@ chat.on('connection' ,function(socket){
             Room.find(socket.roomId, function(err, res){
               room = res[0]
               if(room){
-                room.update({updateTime:  (new Date()).valueOf()}, function(err){
+                room.update({updateTime:  (new Date()).valueOf(), lastMessage: message}, function(err){
                   if(err && debug == true){
                     console.log(err)
                   }

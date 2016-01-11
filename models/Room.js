@@ -13,6 +13,7 @@ module.exports = function() {
         , messageCount    : {type: Number, default: 0 }
         , usersCount      : {type: Number, default: 0 }
         , users           : { type: String }
+        , lastMessage :{}
         ,updateTime: { type: Number}
     });
 
