@@ -34,9 +34,9 @@ var connectRoute = require('connect-route');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-var server = http.createServer(app)
+var server = http.createServer(app)//原生Http服务
 server.listen(config_env.socket.port)
-var io = require('socket.io')(server);
+var io = require('socket.io')(server);//Socket.io服务
 
 
 // var pub = redis.createClient(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
@@ -45,7 +45,7 @@ io.adapter(redis_adapter({ pubClient: redis_client, subClient: sub }));
 
 var chat = io.of('/chat');
 
-chat.on('connection' ,function(socket, data){
+chat.on('connection' ,function(socket){
   var currentUserId = socket.handshake.query.userid,
       roomId = '',
       roomNow = '',
@@ -87,18 +87,8 @@ chat.on('connection' ,function(socket, data){
   }
   )
 
-    
-  // socket.on("online", function(userId){
-  //   // currentUserId = userId
-  //   // console.log("online_user_" + userId)
-  //   // if(debug == true){
-  //   //   socket.emit("server_notice", {action:"online", type: "success"})
-  //   // }
-  //   // socket.join("online_user_"+currentUserId)
-  // })
-
-  socket.on('join room', function(userId, room) {
-    
+  socket.on('join room', function(userId, room, callback) {
+    console.log(1)
     currentUserId = userId;
     roomId = room.room_id;
     ids = room.room_id.split("_")
@@ -110,7 +100,7 @@ chat.on('connection' ,function(socket, data){
       }
     }
     socket.roomId = roomId
-  
+    
     //记录join room time
     State.of(currentUserId, socket.roomId, function(err, state){
       console.log("2")
@@ -140,6 +130,7 @@ chat.on('connection' ,function(socket, data){
 
     Step(
       function joinRoom(){
+        console.log(3)
         redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
         socket.join(socket.roomId);
         Message.changeRead(socket.roomId)
@@ -147,16 +138,20 @@ chat.on('connection' ,function(socket, data){
         // 广播新人加入
         socket.to(socket.roomId).emit('broadcast newer', room.userName);
         
-        
-        socket.emit("server_notice", {action:"join room", type: "success"})
-      
+        if(callback){
+          callback({action:"join room", type: "success"})
+        }else{
+          socket.emit("server_notice", {action:"join room", type: "success"})
+        }
         console.log(currentUserId + ' join');
         this();
       }
 
     )//end of step
+
+
   });
-  socket.on('sendMessage', function(msg){
+  socket.on('sendMessage', function(msg, callback){
     if(debug == true){
       console.log("socketid -> "+ socket.id)
       console.log("socketuserid -> "+ socket.userid)
@@ -166,17 +161,20 @@ chat.on('connection' ,function(socket, data){
     }
 
     if(socket.roomId==null){
-      socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "please call join room first" })
+      if(callback){
+        callback({action:"sendMessage", type: "failed", message: "please call join room first" })
+      }else{
+        socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "please call join room first" })
+      }
       return false
     }
 
-    console.log(socket)
-    console.log("********************")
-    console.log(chat)
-
-
     if(msg.fromUserId == null || msg.toUserId==null || msg.messageType == null){
-      socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "a parameter is missing"})
+      if(callback){
+        callback({action:"sendMessage", type: "failed", message: "a parameter is missing"})
+      }else{
+        socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "a parameter is missing"})
+      }
       return false
     }
 
@@ -190,7 +188,11 @@ chat.on('connection' ,function(socket, data){
         message.save(function(err) {
           if(err) {
             console.log(err);
-            socket.emit("server_notice", {action: "sendMessage", type:"failed", message: err})
+            if(callback){
+              callback({action: "sendMessage", type:"failed", message: err})
+            }else{
+              socket.emit("server_notice", {action: "sendMessage", type:"failed", message: err})
+            }
           } else {
             if(msg.messageType == 0){
               redis_client.hmget("RoomOnlineUsers_"+socket.roomId, msg.toUserId, function(err, res){
@@ -207,8 +209,12 @@ chat.on('connection' ,function(socket, data){
               message["user"] = {}
             }
             socket.to(socket.roomId).emit('new message', message);//发送给在当前房间用户]
-            socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message })
 
+            if(callback){
+              callback({action:"sendMessage", type: "success", message: "", data: message })
+            }else{
+              socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message })
+            }
             Room.find(socket.roomId, function(err, res){
               room = res[0]
               if(room){
@@ -244,7 +250,7 @@ chat.on('connection' ,function(socket, data){
       })
     }
   });
-  socket.on('leaveRoom', function(){
+  socket.on('leaveRoom', function(callback){
     console.log("in leaveRoom action")
     State.of(currentUserId, socket.roomId, function(err, state){
       if(err) {
@@ -273,6 +279,12 @@ chat.on('connection' ,function(socket, data){
     redis_client.hdel("RoomOnlineUsers_"+socket.roomId, socket.userid)
     socket.roomId = null
     socket.leave(socket.roomId);
+
+    if(callback){
+      callback({action:"leaveRoom", type: "success", message: "" })
+    }else{
+      socket.emit("server_notice", {action:"leaveRoom", type: "success", message: "" })
+    }
 
   }); // end of disconnect
   socket.on('disconnect', function(){
