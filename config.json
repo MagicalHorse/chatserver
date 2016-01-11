@@ -1,0 +1,89 @@
+{ 
+  "local":{
+    "debug":true,
+    "redis":{
+      "port":6379,
+      "host":"127.0.0.1",
+      "message_queue": "development_room_message",
+      "pwd":""
+    },
+    "mongodb":{
+      "username": "test",
+      "password": "test_123",
+      "host":"182.92.7.70",
+      "port":"27017",
+      "dbname":"chatserver_develop"
+    },
+    "socket":{
+      "port":"8001"
+    },
+    "apps":{
+      "maishouh5":"html5",
+      "maishouapp": "maishouapp"
+    }
+  },
+  "development":{
+    "debug":true,
+    "redis":{
+      "port":6379,
+      "host":"035562f99bb940bb.m.cnbja.kvstore.aliyuncs.com",
+      "message_queue": "development_room_message",
+      "pwd":"035562f99bb940bb:Devredis123"
+    },
+    "mongodb":{
+      "username": "test",
+      "password": "test_123",
+      "host":"10.165.68.116",
+      "port":"27017",
+      "dbname":"chatserver_develop"
+
+    },
+    "socket":{
+      "port":"8001"
+    },
+    "apps":{
+      "maishouh5":"html5",
+      "maishouapp": "maishouapp"
+    }
+  },
+  "demo":{
+    "debug":true,
+    "redis":{
+      "port":6379,
+      "host":"035562f99bb940bb.m.cnbja.kvstore.aliyuncs.com",
+      "message_queue": "demo_room_message",
+      "pwd":"035562f99bb940bb:Devredis123"
+    },
+    "mongodb":{
+      "username": "Mhdev",
+      "password": "Mhdev_123",
+      "host":"10.165.68.116",
+      "port":"27017",
+      "dbname":"chatserver"
+
+    },
+    "socket":{
+      "port":"8000"
+    }
+  },
+  "production":{
+    "debug":false,
+    "redis":{
+      "port":6379,
+      "host":"6b18e3ad87a54cb5.m.cnbja.kvstore.aliyuncs.com",
+      "message_queue": "room_message",
+      "pwd":"6b18e3ad87a54cb5:Mhprodredis123"
+    },
+    "mongodb":{
+      "username": "Mhprod",
+      "password": "Mhprod_123",
+      "host":"10.173.20.52",
+      "port":"27017",
+      "dbname":"chatserver"
+
+    },
+    "socket":{
+      "port":"8000"
+    }
+  }
+}
