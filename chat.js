@@ -109,10 +109,9 @@ chat.on('connection' ,function(socket){
         roomId = ids[1]+'_'+ ids[0]
       }
     }
-    socket.roomId = roomId
   
     //记录join room time
-    State.of(currentUserId, socket.roomId, function(err, state){
+    State.of(currentUserId, roomId, function(err, state){
       console.log("2")
       if(err) {
         console.log(err);
@@ -126,7 +125,7 @@ chat.on('connection' ,function(socket){
             }
           });
         } else {
-          state = new State({userId: currentUserId, roomId: socket.roomId, connectDate: Date.now()});
+          state = new State({userId: currentUserId, roomId: roomId, connectDate: Date.now()});
           state.save(function(err) {
             if(err) {
               console.log(err);
@@ -140,14 +139,14 @@ chat.on('connection' ,function(socket){
 
     Step(
       function joinRoom(){
-        redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
-        socket.join(socket.roomId);
+        redis_client.hmset("RoomOnlineUsers_"+roomId, currentUserId, true)
+        socket.join(roomId);
 
         console.log(socket)
-        Message.changeRead(socket.roomId)
+        Message.changeRead(roomId)
 
         // 广播新人加入
-        socket.to(socket.roomId).emit('broadcast newer', room.userName);
+        socket.to(roomId).emit('broadcast newer', room.userName);
         
         
         socket.emit("server_notice", {action:"join room", type: "success"})
@@ -167,7 +166,7 @@ chat.on('connection' ,function(socket){
       console.log(msg)
     }
 
-    if(socket.roomId==null){
+    if(roomId==null){
       socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "please call join room first" })
       return false
     }
@@ -187,7 +186,7 @@ chat.on('connection' ,function(socket){
       //获取发送者用户信息
       User.find(msg.fromUserId, function(err, user){
         msg.isRead = 0
-        params_message = {  fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead}
+        params_message = {  fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead}
         var message = new Message(params_message);
         message.save(function(err) {
           if(err) {
@@ -195,7 +194,7 @@ chat.on('connection' ,function(socket){
             socket.emit("server_notice", {action: "sendMessage", type:"failed", message: err})
           } else {
             if(msg.messageType == 0){
-              redis_client.hmget("RoomOnlineUsers_"+socket.roomId, msg.toUserId, function(err, res){
+              redis_client.hmget("RoomOnlineUsers_"+roomId, msg.toUserId, function(err, res){
                 if(res[0] == 'true'){
                   message.isRead = 1 
                   message.save()
@@ -208,10 +207,10 @@ chat.on('connection' ,function(socket){
             }else{
               message["user"] = {}
             }
-            socket.to(socket.roomId).emit('new message', message);//发送给在当前房间用户]
+            socket.to(roomId).emit('new message', message);//发送给在当前房间用户]
             socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message })
 
-            Room.find(socket.roomId, function(err, res){
+            Room.find(roomId, function(err, res){
               room = res[0]
               if(room){
                 room.update({updateTime:  (new Date()).valueOf()}, function(err){
@@ -222,7 +221,7 @@ chat.on('connection' ,function(socket){
                 if(room.type == 'private'){
                   eval(room.users).forEach(function(user_id){
                     isonline =  false
-                    redis_client.hmget("RoomOnlineUsers_"+socket.roomId, user_id, function(err, res){
+                    redis_client.hmget("RoomOnlineUsers_"+roomId, user_id, function(err, res){
                       isonline =  res[0]
                       if(socket.userid != user_id && isonline != 'true' ){
                         redis_client.get("login"+user_id, function(err, reply){
@@ -248,7 +247,7 @@ chat.on('connection' ,function(socket){
   });
   socket.on('leaveRoom', function(){
     console.log("in leaveRoom action")
-    State.of(currentUserId, socket.roomId, function(err, state){
+    State.of(currentUserId, roomId, function(err, state){
       if(err) {
         console.log(err);
       } else {
@@ -261,7 +260,7 @@ chat.on('connection' ,function(socket){
             }
           });
         } else {
-          state = new State({userId: currentUserId, roomId: socket.roomId, disconnectDate: Date.now()});
+          state = new State({userId: currentUserId, roomId: roomId, disconnectDate: Date.now()});
           state.save(function(err) {
             if(err) {
               console.log(err);
@@ -272,13 +271,13 @@ chat.on('connection' ,function(socket){
         }
       }
     });
-    redis_client.hdel("RoomOnlineUsers_"+socket.roomId, socket.userid)
-    socket.roomId = null
-    socket.leave(socket.roomId);
+    redis_client.hdel("RoomOnlineUsers_"+roomId, socket.userid)
+    roomId = null
+    socket.leave(roomId);
 
   }); // end of disconnect
   socket.on('disconnect', function(){
-    State.of(currentUserId, socket.roomId, function(err, state){
+    State.of(currentUserId, roomId, function(err, state){
       if(err) {
         console.log(err);
       } else {
@@ -291,7 +290,7 @@ chat.on('connection' ,function(socket){
             }
           });
         } else {
-          state = new State({userId: currentUserId, roomId: socket.roomId, disconnectDate: Date.now()});
+          state = new State({userId: currentUserId, roomId: roomId, disconnectDate: Date.now()});
           state.save(function(err) {
             if(err) {
               console.log(err);
@@ -302,11 +301,11 @@ chat.on('connection' ,function(socket){
         }
       }
     });
-    redis_client.hdel("RoomOnlineUsers_"+socket.roomId, socket.userid)
-    socket.roomId = null
+    redis_client.hdel("RoomOnlineUsers_"+roomId, socket.userid)
+    roomId = null
     redis_client.del("login"+socket.userid, socket.id, function(err, reply){
       console.log(socket.userid + ": logout");
     })
-    socket.leave(socket.roomId);
+    socket.leave(roomId);
   }); // end of disconnect
 });
