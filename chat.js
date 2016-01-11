@@ -87,16 +87,6 @@ chat.on('connection' ,function(socket){
   }
   )
 
-    
-  // socket.on("online", function(userId){
-  //   // currentUserId = userId
-  //   // console.log("online_user_" + userId)
-  //   // if(debug == true){
-  //   //   socket.emit("server_notice", {action:"online", type: "success"})
-  //   // }
-  //   // socket.join("online_user_"+currentUserId)
-  // })
-
   socket.on('join room', function(userId, room) {
     
     currentUserId = userId;
@@ -149,7 +139,7 @@ chat.on('connection' ,function(socket){
         socket.to(roomId).emit('broadcast newer', room.userName);
         
         
-        socket.emit("server_notice", {action:"join room", type: "success"})
+        // socket.emit("server_notice", {action:"join room", type: "success"})
       
         console.log(currentUserId + ' join');
         this();
@@ -167,7 +157,7 @@ chat.on('connection' ,function(socket){
     }
 
     if(roomId==null){
-      socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "please call join room first" })
+      // socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "please call join room first" })
       return false
     }
 
@@ -177,7 +167,7 @@ chat.on('connection' ,function(socket){
 
 
     if(msg.fromUserId == null || msg.toUserId==null || msg.messageType == null){
-      socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "a parameter is missing"})
+      // socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "a parameter is missing"})
       return false
     }
 
@@ -208,7 +198,7 @@ chat.on('connection' ,function(socket){
               message["user"] = {}
             }
             socket.to(roomId).emit('new message', message);//发送给在当前房间用户]
-            socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message })
+            // socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message })
 
             Room.find(roomId, function(err, res){
               room = res[0]
