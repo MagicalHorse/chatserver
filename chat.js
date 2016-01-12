@@ -56,7 +56,7 @@ chat.on('connection' ,function(socket){
     if(debug == true){
       console.log("socketid-> "+ socket.id)
       console.log(socket.handshake.query)
-      console.log("userid : "+socket.handshake.query.userid+"\r\nsign :  "+socket.handshake.query.sign +"\r\ntimestamp:  "+socket.handshake.query.timestamp+"\r\nappid: " +socket.handshake.query.appid +"\r\nappsercet: "+config_env.apps[socket.handshake.query.appid] +"\r\n sign2: "+crypto.createHash("md5").update(socket.handshake.query.userid + socket.handshake.query.timestamp + socket.handshake.query.appid + config_env.apps[socket.handshake.query.appid]).digest("hex"))
+      console.log("userid : "+socket.handshake.query.userid+"\r\nsign :  "+socket.handshake.query.sign +"\r\ntimestamp:  "+socket.handshake.query.timestamp+"\r\nappid: " +socket.handshake.query.appid +"\r\nappsercet: "+config_env.apps[socket.handshake.query.appid])
     }
     
     if(socket.handshake.query.userid == null || socket.handshake.query.sign== null || socket.handshake.query.timestamp == null || socket.handshake.query.appid == null ||  config_env.apps[socket.handshake.query.appid] == null || crypto.createHash("md5").update(socket.handshake.query.userid + socket.handshake.query.timestamp + socket.handshake.query.appid + config_env.apps[socket.handshake.query.appid]).digest("hex") != socket.handshake.query.sign ){
