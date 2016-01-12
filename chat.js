@@ -231,7 +231,8 @@ chat.on('connection' ,function(socket){
                       if(socket.userid != user_id && isonline != 'true' ){
                         redis_client.get("login"+user_id, function(err, reply){
                           if(reply != null && chat.connected[reply]!=null){
-                            chat.connected[reply].emit("server_notice", {action:"new message", type: "success", message:"new message", data: message})
+                            // chat.connected[reply].emit("server_notice", {action:"new message", type: "success", message:"new message", data: message})
+                            chat.connected[reply].emit("room message", message)
                           }else{
                             if(room.type == 'private'){
                               redis_client.sadd(config_env.redis.message_queue, JSON.stringify(message))
