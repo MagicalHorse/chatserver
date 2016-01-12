@@ -60,11 +60,11 @@ chat.on('connection' ,function(socket){
     }
     
     if(socket.handshake.query.userid == null || socket.handshake.query.sign== null || socket.handshake.query.timestamp == null || socket.handshake.query.appid == null ||  config_env.apps[socket.handshake.query.appid] == null || crypto.createHash("md5").update(socket.handshake.query.userid + socket.handshake.query.timestamp + socket.handshake.query.appid + config_env.apps[socket.handshake.query.appid]).digest("hex") != socket.handshake.query.sign ){
-      socket.emit("server_notice", {action:"login", type: "failed"})
+      socket.emit("server_notice", {action:"login", type: "failed", errcode: 401})
       socket.disconnect()
       return false;
     }else{
-      socket.emit("server_notice", {action:"login", type: "success"})
+      socket.emit("server_notice", {action:"login", type: "success", errcode: 200})
     }
 
     redis_client.get("login"+socket.handshake.query.userid, function(err, reply){
@@ -72,7 +72,7 @@ chat.on('connection' ,function(socket){
       if(reply != null){
         
         if(chat.connected[reply]!=null){
-          chat.connected[reply].emit("server_notice", {action:"logout", type: "success", message:"Other equipment landing"})
+          chat.connected[reply].emit("server_notice", {action:"logout", type: "success", message:"Other equipment landing", errcode: 402})
           chat.connected[reply].disconnect()
         }else{
           redis_client.del("login"+socket.handshake.query.userid, function(err, reply){
@@ -139,9 +139,9 @@ chat.on('connection' ,function(socket){
         socket.to(socket.roomId).emit('broadcast newer', room.userName);
         
         if(callback){
-          callback({action:"join room", type: "success"})
+          callback({action:"join room", type: "success", errcode: 200})
         }else{
-          socket.emit("server_notice", {action:"join room", type: "success"})
+          socket.emit("server_notice", {action:"join room", type: "success", errcode: 200})
         }
         console.log(currentUserId + ' join');
         this();
@@ -162,18 +162,18 @@ chat.on('connection' ,function(socket){
 
     if(socket.roomId==null){
       if(callback){
-        callback({action:"sendMessage", type: "failed", message: "please call join room first" })
+        callback({action:"sendMessage", type: "failed", message: "please call join room first" , errcode: 403})
       }else{
-        socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "please call join room first" })
+        socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "please call join room first", errcode: 403 })
       }
       return false
     }
 
     if(msg.fromUserId == null || msg.toUserId==null || msg.messageType == null){
       if(callback){
-        callback({action:"sendMessage", type: "failed", message: "a parameter is missing"})
+        callback({action:"sendMessage", type: "failed", message: "a parameter is missing", errcode: 404})
       }else{
-        socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "a parameter is missing"})
+        socket.emit("server_notice", {action:"sendMessage", type: "failed", message: "a parameter is missing", errcode: 404})
       }
       return false
     }
@@ -189,9 +189,9 @@ chat.on('connection' ,function(socket){
           if(err) {
             console.log(err);
             if(callback){
-              callback({action: "sendMessage", type:"failed", message: err})
+              callback({action: "sendMessage", type:"failed", message: err, errcode: 405})
             }else{
-              socket.emit("server_notice", {action: "sendMessage", type:"failed", message: err})
+              socket.emit("server_notice", {action: "sendMessage", type:"failed", message: err, errcode: 405})
             }
           } else {
             if(msg.messageType == 0){
@@ -211,9 +211,9 @@ chat.on('connection' ,function(socket){
             socket.to(socket.roomId).emit('new message', message);//发送给在当前房间用户]
 
             if(callback){
-              callback({action:"sendMessage", type: "success", message: "", data: message })
+              callback({action:"sendMessage", type: "success", message: "", data: message, errcode: 406 })
             }else{
-              socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message })
+              socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message, errcode: 406 })
             }
             Room.find(socket.roomId, function(err, res){
               room = res[0]
@@ -282,9 +282,9 @@ chat.on('connection' ,function(socket){
     socket.leave(socket.roomId);
 
     if(callback){
-      callback({action:"leaveRoom", type: "success", message: "" })
+      callback({action:"leaveRoom", type: "success", message: "", errcode: 407  })
     }else{
-      socket.emit("server_notice", {action:"leaveRoom", type: "success", message: "" })
+      socket.emit("server_notice", {action:"leaveRoom", type: "success", message: "", errcode: 407  })
     }
 
   }); // end of disconnect
