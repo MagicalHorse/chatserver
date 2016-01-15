@@ -131,6 +131,14 @@ chat.on('connection' ,function(socket){
     Step(
       function joinRoom(){
         console.log(3)
+        Room.exist(socket.roomId, function(err, res){
+          if(res == 0){
+            Room.create({_id: socket.roomId}, function(err, res){
+
+            })
+          }
+        })
+
         redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
         socket.join(socket.roomId);
         Message.changeRead(socket.roomId)
