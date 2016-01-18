@@ -286,9 +286,8 @@ chat.on('connection' ,function(socket){
       }
     });
     redis_client.hdel("RoomOnlineUsers_"+socket.roomId, socket.userid)
-    socket.roomId = null
     socket.leave(socket.roomId);
-
+    socket.roomId = null
     if(callback){
       callback({action:"leaveRoom", type: "success", message: "", errcode: 407  })
     }else{
