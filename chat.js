@@ -135,10 +135,10 @@ chat.on('connection' ,function(socket){
           if(res == 0){
             _room = {}
             if(socket.roomId.split("_").length == 2){
-              _room = {_id: socket.roomId, users:socket.roomId.split("_")}
+              _room = {_id: socket.roomId, users:socket.roomId.split("_"), type:'private'}
               
             }else{
-              _room = {_id: socket.roomId, users:[socket.userid]}
+              _room = {_id: socket.roomId, users:[socket.userid], type:'group'}
             }
             Room.create(_room, function(err, res){
               })
