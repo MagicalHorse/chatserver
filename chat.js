@@ -99,7 +99,16 @@ chat.on('connection' ,function(socket){
         roomId = ids[1]+'_'+ ids[0]
       }
     }
+    if(parseInt(socket.userid) != parseInt(ids[0]) && parseInt(socket.userid) != parseInt(ids[1]) ){
+      if(callback){
+        callback({action:"join room", type: "failed", message: "can't join private room" , errcode: 408})
+      }else{
+        socket.emit("server_notice", {action:"join room", type: "failed", message: "can't join private room", errcode: 408 })
+      }
+      return false
+    }
     socket.roomId = roomId
+
     
     //记录join room time
     State.of(currentUserId, socket.roomId, function(err, state){
