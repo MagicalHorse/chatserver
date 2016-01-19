@@ -133,9 +133,15 @@ chat.on('connection' ,function(socket){
         console.log(3)
         Room.exist(socket.roomId, function(err, res){
           if(res == 0){
-            Room.create({_id: socket.roomId}, function(err, res){
-
-            })
+            _room = {}
+            if(socket.roomId.split("_").length == 2){
+              _room = {_id: socket.roomId, users:socket.roomId.split("_")}
+              
+            }else{
+              _room = {_id: socket.roomId, users:[socket.userid]}
+            }
+            Room.create(_room, function(err, res){
+              })
           }
         })
 
