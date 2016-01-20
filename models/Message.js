@@ -40,6 +40,7 @@ module.exports = function() {
     };
 
     Message.statics.changeRead = function(roomid){
+      console.log("changeRead : "+ roomid)
       MessageModel.update({roomId: roomid}, {$set : {isRead: 1}}, {}, function(err){
         console.log(err)
       })
