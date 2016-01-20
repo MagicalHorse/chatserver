@@ -99,7 +99,7 @@ chat.on('connection' ,function(socket){
         roomId = ids[1]+'_'+ ids[0]
       }
     }
-    if(parseInt(socket.userid) != parseInt(ids[0]) && parseInt(socket.userid) != parseInt(ids[1]) ){
+    if(ids.length == 2 && parseInt(socket.userid) != parseInt(ids[0]) && parseInt(socket.userid) != parseInt(ids[1]) ){
       if(callback){
         callback({action:"join room", type: "failed", message: "can't join private room" , errcode: 408})
       }else{
