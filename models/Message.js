@@ -41,7 +41,9 @@ module.exports = function() {
 
     Message.statics.changeRead = function(roomid){
       console.log("changeRead : "+ roomid)
-      MessageModel.update({roomId: roomid}, {$set : {isRead: 1}}, {}, function(err){
+      MessageModel.update({roomId: roomid}, {$set : {isRead: 1}}, function(err, result){
+        console.log("123")
+        console.log(result)
         console.log(err)
       })
     }
