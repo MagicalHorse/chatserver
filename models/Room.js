@@ -13,6 +13,8 @@ module.exports = function() {
         , messageCount    : {type: Number, default: 0 }
         , usersCount      : {type: Number, default: 0 }
         , users           : { type: String }
+        , customer_id: {type: Number, default: 0 }
+        , buyer_id: {type: Number, default: 0 }
         , lastMessage :{}
         ,updateTime: { type: Number}
     });

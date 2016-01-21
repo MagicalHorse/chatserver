@@ -144,7 +144,7 @@ chat.on('connection' ,function(socket){
           if(res == 0){
             _room = {}
             if(socket.roomId.split("_").length == 2){
-              _room = {_id: socket.roomId, users: JSON.stringify(socket.roomId.split("_")), type:'private'}
+              _room = {_id: socket.roomId, users: JSON.stringify(socket.roomId.split("_")), type:'private', customer_id: socket.roomId.split("_")[0], buyer_id: socket.roomId.split("_")[1]}
               
             }else{
               _room = {_id: socket.roomId, users:JSON.stringify([socket.userid]), type:'group'}
