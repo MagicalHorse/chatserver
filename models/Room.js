@@ -16,7 +16,7 @@ module.exports = function() {
         , customer_id: {type: Number, default: 0 }
         , buyer_id: {type: Number, default: 0 }
         , lastMessage :{}
-        ,updateTime: { type: Number}
+        ,updateTime: { type: Number, default: 0}
     });
 
     Room.statics.exist = function(roomid, callback) {
