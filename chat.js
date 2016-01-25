@@ -184,6 +184,7 @@ chat.on('connection' ,function(socket){
     }
 
     if(socket.roomId==null){
+      console.log("socket.roomId==null")
       if(callback){
         callback({action:"sendMessage", type: "failed", message: "please call join room first" , errcode: 403})
       }else{
@@ -193,6 +194,7 @@ chat.on('connection' ,function(socket){
     }
 
     if(msg.fromUserId == null || msg.toUserId==null || msg.messageType == null){
+      console.log("msg.fromUserId == null || msg.toUserId==null || msg.messageType == null")
       if(callback){
         callback({action:"sendMessage", type: "failed", message: "a parameter is missing", errcode: 404})
       }else{
