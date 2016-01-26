@@ -88,6 +88,10 @@
     },
     "socket":{
       "port":"8000"
+    },
+    "apps":{
+      "maishouh5":"html5",
+      "maishouapp": "maishouapp"
     }
   }
 }
