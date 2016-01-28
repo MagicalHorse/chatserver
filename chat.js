@@ -89,7 +89,7 @@ chat.on('connection' ,function(socket){
 
   socket.on('join room', function(userId, room, callback) {
     console.log(1)
-    currentUserId = userId;
+    currentUserId = socket.userid;
     roomId = room.room_id;
     ids = room.room_id.split("_")
     if(ids.length == 2){
@@ -111,7 +111,7 @@ chat.on('connection' ,function(socket){
 
     
     //记录join room time
-    State.of(currentUserId, socket.roomId, function(err, state){
+    State.of(socket.userid, socket.roomId, function(err, state){
       console.log("2")
       if(err) {
         console.log(err);
