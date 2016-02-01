@@ -74,7 +74,9 @@ chat.on('connection' ,function(socket){
         
         if(chat.connected[reply]!=null){
           redis_client.get("loginDeviceid"+socket.handshake.query.userid, function(err, deviceid){
-            if(deviceid != null && deviceid == socket.handshake.query.deviceid){
+            console.log("deviceid : "+ deviceid)
+            console.log("socket deviceid: "+ socket.handshake.query.deviceid)
+            if( deviceid != null && deviceid!="" && deviceid == socket.handshake.query.deviceid){
               chat.connected[reply].disconnect()
             }else{
               chat.connected[reply].emit("server_notice", {action:"logout", type: "success", message:"Other equipment landing", errcode: 402})
@@ -88,7 +90,6 @@ chat.on('connection' ,function(socket){
         }
       }
       redis_client.set("login"+socket.handshake.query.userid, socket.id, function(err, reply){
-        
       })
       redis_client.set("loginDeviceid"+socket.handshake.query.userid, socket.handshake.query.deviceid, function(err, reply){
       })
