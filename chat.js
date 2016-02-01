@@ -88,8 +88,9 @@ chat.on('connection' ,function(socket){
         }
       }
       redis_client.set("login"+socket.handshake.query.userid, socket.id, function(err, reply){
-        redis_client.set("loginDeviceid"+socket.handshake.query.userid, socket.handshake.query.deviceid, function(err, reply){
-        })
+        
+      })
+      redis_client.set("loginDeviceid"+socket.handshake.query.userid, socket.handshake.query.deviceid, function(err, reply){
       })
     })
   }
