@@ -52,11 +52,12 @@ chat.on('connection' ,function(socket){
       disconnectionTime = '',
       sessionId = '';
     socket.userid=socket.handshake.query.userid
+    socket.deviceid=socket.handshake.query.deviceid
   Step(function authorization(){
     if(debug == true){
       console.log("socketid-> "+ socket.id)
       console.log(socket.handshake.query)
-      console.log("userid : "+socket.handshake.query.userid+"\r\nsign :  "+socket.handshake.query.sign +"\r\ntimestamp:  "+socket.handshake.query.timestamp+"\r\nappid: " +socket.handshake.query.appid +"\r\nappsercet: "+config_env.apps[socket.handshake.query.appid])
+      console.log("userid : "+socket.handshake.query.userid+"\r\nsign :  "+socket.handshake.query.sign +"\r\ntimestamp:  "+socket.handshake.query.timestamp+"\r\nappid: " +socket.handshake.query.appid +"\r\nappsercet: "+config_env.apps[socket.handshake.query.appid]+"\r\ndeviceid: "+socket.handshake.query.deviceid)
     }
     
     if(socket.handshake.query.userid == null || socket.handshake.query.sign== null || socket.handshake.query.timestamp == null || socket.handshake.query.appid == null ||  config_env.apps[socket.handshake.query.appid] == null || crypto.createHash("md5").update(socket.handshake.query.userid + socket.handshake.query.timestamp + socket.handshake.query.appid + config_env.apps[socket.handshake.query.appid]).digest("hex") != socket.handshake.query.sign ){
@@ -72,8 +73,14 @@ chat.on('connection' ,function(socket){
       if(reply != null){
         
         if(chat.connected[reply]!=null){
-          chat.connected[reply].emit("server_notice", {action:"logout", type: "success", message:"Other equipment landing", errcode: 402})
-          chat.connected[reply].disconnect()
+          redis_client.get("loginDeviceid"+socket.handshake.query.userid, function(err, deviceid){
+            if(deviceid != null && deviceid == socket.handshake.query.deviceid){
+              chat.connected[reply].disconnect()
+            }else{
+              chat.connected[reply].emit("server_notice", {action:"logout", type: "success", message:"Other equipment landing", errcode: 402})
+              chat.connected[reply].disconnect()
+            }
+          })
         }else{
           redis_client.del("login"+socket.handshake.query.userid, function(err, reply){
             console.log("******"+ reply)
@@ -81,6 +88,9 @@ chat.on('connection' ,function(socket){
         }
       }
       redis_client.set("login"+socket.handshake.query.userid, socket.id, function(err, reply){
+        redis_client.set("loginDeviceid"+socket.handshake.query.userid, socket.handshake.query.deviceid, function(err, reply){
+          console.log(socket.handshake.query.userid+"DiveceIDset:"+reply.toString());
+        })
         console.log(socket.handshake.query.userid+"set:"+reply.toString());
       })
     })
@@ -374,8 +384,10 @@ chat.on('connection' ,function(socket){
     });
     redis_client.hdel("RoomOnlineUsers_"+socket.roomId, socket.userid)
     socket.roomId = null
-    redis_client.del("login"+socket.userid, socket.id, function(err, reply){
+    redis_client.del("login"+socket.userid, function(err, reply){
       console.log(socket.userid + ": logout");
+    })
+    redis_client.del("loginDeviceid"+socket.userid, function(err, reply){
     })
     socket.leave(socket.roomId);
   }); // end of disconnect
