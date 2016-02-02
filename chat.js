@@ -77,23 +77,10 @@ chat.on('connection' ,function(socket){
             console.log("deviceid : "+ deviceid)
             console.log("socket deviceid: "+ socket.handshake.query.deviceid)
             if( deviceid != null && deviceid!="" && deviceid == socket.handshake.query.deviceid){
-              chat.connected[reply].disconnect(function(){
-                redis_client.set("login"+socket.handshake.query.userid, socket.id, function(err, reply){
-                })
-                redis_client.set("loginDeviceid"+socket.handshake.query.userid, socket.handshake.query.deviceid, function(err, reply){
-                })
-                console.log("debug: no server_notice")
-              })
+              chat.connected[reply].disconnect(socket)
             }else{
               chat.connected[reply].emit("server_notice", {action:"logout", type: "success", message:"Other equipment landing", errcode: 402})
-              chat.connected[reply].disconnect(function(){
-                redis_client.set("login"+socket.handshake.query.userid, socket.id, function(err, reply){
-                })
-                redis_client.set("loginDeviceid"+socket.handshake.query.userid, socket.handshake.query.deviceid, function(err, reply){
-                })
-                console.log("debug: server_notice")
-              })
-
+              chat.connected[reply].disconnect(socket)
             }
           })
         }else{
@@ -370,7 +357,7 @@ chat.on('connection' ,function(socket){
     }
 
   }); // end of disconnect
-  socket.on('disconnect', function(callback){
+  socket.on('disconnect', function(socket_info){
     State.of(currentUserId, socket.roomId, function(err, state){
       if(err) {
         console.log(err);
@@ -403,8 +390,12 @@ chat.on('connection' ,function(socket){
     redis_client.del("loginDeviceid"+socket.userid, function(err, reply){
     })
     socket.leave(socket.roomId);
-    if(callback){
-      callback({action:"disconnect", type: "success", message: "", errcode: 420  })
+    if(socket_info){
+      redis_client.set("login"+socket_info.handshake.query.userid, socket_info.id, function(err, reply){
+      })
+      redis_client.set("loginDeviceid"+socket_info.handshake.query.userid, socket_info.handshake.query.deviceid, function(err, reply){
+      })
+      console.log(socket_info.handshake.query.deviceid)
     }
   }); // end of disconnect
 });
