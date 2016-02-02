@@ -77,10 +77,10 @@ chat.on('connection' ,function(socket){
             console.log("deviceid : "+ deviceid)
             console.log("socket deviceid: "+ socket.handshake.query.deviceid)
             if( deviceid != null && deviceid!="" && deviceid == socket.handshake.query.deviceid){
-              chat.connected[reply].disconnect(socket)
+              chat.connected[reply].disconnect(socket.handshake.query.userid, socket.handshake.query.deviceid, socket.id)
             }else{
               chat.connected[reply].emit("server_notice", {action:"logout", type: "success", message:"Other equipment landing", errcode: 402})
-              chat.connected[reply].disconnect(socket)
+              chat.connected[reply].disconnect(socket.handshake.query.userid, socket.handshake.query.deviceid, socket.id)
             }
           })
         }else{
@@ -357,7 +357,7 @@ chat.on('connection' ,function(socket){
     }
 
   }); // end of disconnect
-  socket.on('disconnect', function(socket_info){
+  socket.on('disconnect', function(socket_userid, socket_deviceid, socket_id){
     State.of(currentUserId, socket.roomId, function(err, state){
       if(err) {
         console.log(err);
@@ -390,12 +390,12 @@ chat.on('connection' ,function(socket){
     redis_client.del("loginDeviceid"+socket.userid, function(err, reply){
     })
     socket.leave(socket.roomId);
-    if(socket_info){
-      redis_client.set("login"+socket_info.handshake.query.userid, socket_info.id, function(err, reply){
+    if(socket_userid && socket_deviceid && socket_id){
+      redis_client.set("login"+socket_userid, socket_id, function(err, reply){
       })
-      redis_client.set("loginDeviceid"+socket_info.handshake.query.userid, socket_info.handshake.query.deviceid, function(err, reply){
+      redis_client.set("loginDeviceid"+socket_userid, socket_deviceid, function(err, reply){
       })
-      console.log(socket_info.handshake.query.deviceid)
+      console.log("params  :"+socket_userid+" "+socket_deviceid+ " "+ socket_id)
     }
   }); // end of disconnect
 });
