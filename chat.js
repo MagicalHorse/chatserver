@@ -281,9 +281,9 @@ chat.on('connection' ,function(socket){
             socket.to(socket.roomId).emit('new message', message);//发送给在当前房间用户]
 
             if(callback){
-              callback({action:"sendMessage", type: "success", message: "", data: message, errcode: 406 })
+              callback({action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
             }else{
-              socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message, errcode: 406 })
+              socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
             }
             Room.find(socket.roomId, function(err, res){
               room = res[0]
