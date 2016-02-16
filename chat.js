@@ -253,7 +253,7 @@ chat.on('connection' ,function(socket){
       //获取发送者用户信息
       User.find(msg.fromUserId, function(err, user){
         msg.isRead = 0
-        params_message = {  fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead}
+        params_message = { sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead}
         var message = new Message(params_message);
         message.save(function(err) {
           if(err) {

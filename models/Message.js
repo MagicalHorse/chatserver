@@ -19,6 +19,7 @@ module.exports = function() {
       // notice 通知类消息
       , type        : String
       , productId   : Number 
+      , sendtype    : Number
       , user : {}
       , creationDate        : { type: Date, default: Date.now }
     },
