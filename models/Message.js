@@ -20,6 +20,7 @@ module.exports = function() {
       , type        : String
       , productId   : Number 
       , sendtype    : Number
+      , data : {}
       , user : {}
       , creationDate        : { type: Date, default: Date.now }
     },
