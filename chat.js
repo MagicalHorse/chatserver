@@ -65,7 +65,9 @@ chat.on('connection' ,function(socket){
       socket.disconnect()
       return false;
     }else{
-      socket.emit("server_notice", {action:"login", type: "success", errcode: 200})
+      Message.buyerUnreadCount(socket.userid , function(err, res){
+        socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unreadcount: res} })
+      })
     }
 
     redis_client.get("login"+socket.handshake.query.userid, function(err, reply){

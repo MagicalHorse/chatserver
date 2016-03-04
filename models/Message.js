@@ -71,19 +71,12 @@ module.exports = function() {
       }
     }
 
-    Message.statics.buyerUnreadCount = function(buyerid, disconnectTime, callback){
-      if (disconnectTime == ''){
-        MessageModel
-        .where('toUserId', buyerid)
-        .count({})
-        .exec(callback);
-      }else{
-        MessageModel
-        .where('toUserId', buyerid)
-        .where('creationDate').gte(disconnectTime)
-        .count({})
-        .exec(callback);
-      }
+    Message.statics.buyerUnreadCount = function(buyerid, callback){
+      MessageModel
+      .where('toUserId', buyerid)
+      .where('isRead', 0)
+      .count({})
+      .exec(callback);
     }
 
     Message.statics.last = function(roomid, Num, callback) {
