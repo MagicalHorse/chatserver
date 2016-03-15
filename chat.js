@@ -258,6 +258,11 @@ chat.on('connection' ,function(socket){
         params_message = { sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
 
         var message = new Message(params_message);
+        if(user.length > 0){
+          message["user"] = user[0]
+        }else{
+          message["user"] = {}
+        }
         message.save(function(err) {
           if(err) {
             console.log(err);
@@ -276,11 +281,7 @@ chat.on('connection' ,function(socket){
               })
             }
 
-            if(user.length > 0){
-              message["user"] = user[0]
-            }else{
-              message["user"] = {}
-            }
+
             socket.to(socket.roomId).emit('new message', message);//发送给在当前房间用户]
 
             if(callback){

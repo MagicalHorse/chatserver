@@ -7,6 +7,9 @@ module.exports = {
          // Example:
          // client.setHeader('Authorization', 'OAuth abcd-1234');
          // client.disable('websocket');
+         console.log("*******")
+         console.log(client)
+         console.log("*******")
        },
 
        /**
@@ -15,23 +18,19 @@ module.exports = {
         * @param {done} callback function(err) {}
         */
        onConnect : function(client, done) {
-         // Faye client
-         // client.subscribe('/channel', function(message) { });
-
-         // Socket.io client
-         var room = {room_id: "845_30944", owner: 30944, type: 'private', userName: "123112231212"}
-         client.emit('join room', 30944, room, function(data){
+         var room = {room_id: "4833_4899", owner: 4899, type: 'private', userName: "123112231212"}
+         client.emit('join room', 4899, room, function(data){
           console.log(data)
-        });
-         // client.emit('sendMessage', { fromUserId: '30944',toUserId: '845',userName: '123112231212',body: 'sdfa',messageType: 0 }, function(data){
-         //  console.log(data)
-         // });
-
-         // Primus client
-         // client.write('Sailing the seas of cheese');
-
-         // WAMP session
-         // client.subscribe('com.myapp.hello').then(function(args) { });
+          });
+         // var message ={ fromUserId: '4899', toUserId: '416', userName: '果果', body: '8888', messageType: 0, sendtype: 0 }
+         // var res = []
+         //  for(var i = 0; i < 100; i++){
+            
+         //    message["body"] = i.toString()
+         //    client.emit('sendMessage', message, function(data){
+         //      console.log(data["data"]["body"] +"   " +data["errcode"])
+         //    });
+         //  }
 
          done();
        },
@@ -43,9 +42,10 @@ module.exports = {
         */
        sendMessage : function(client, done) {
          // Example:
-         client.emit('test', { hello: 'world' });
-         client.emit('sendMessage', { fromUserId: '30944',toUserId: '845',userName: '123112231212',body: 'sdfa',messageType: 0 }, function(data){
-          console.log(data)
+         var message ={ fromUserId: '4899', toUserId: '4833', userName: '果果', body: '9999', messageType: 0, sendtype: 0 }
+
+         client.emit('sendMessage', message, function(data){
+          console.log(data["errcode"])
          });
          // client.publish('/test', { hello: 'world' });
          // client.call('com.myapp.add2', [2, 3]).then(function (res) { });
