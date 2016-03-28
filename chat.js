@@ -68,7 +68,10 @@ chat.on('connection' ,function(socket){
       // Message.buyerUnreadCount(socket.userid , function(err, res){
       //   socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unreadcount: res} })
       // })
-      Message.unreadMessageGroupByRoomid(socket.userid, function(err, res){
+      Message.aggregate([
+          {$match: {toUserId: socket.userid}},
+          {$group: {_id: "roomId"}}
+        ], function(err, res){
         socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unredmessages: res} })
       })
     }
