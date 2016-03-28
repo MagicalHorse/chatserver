@@ -184,10 +184,10 @@ chat.on('connection' ,function(socket){
             socket.emit("server_notice", {action:"join room", type: "success", errcode: 200, data:{unread_messages: unread_messages}})
           }
           console.log(currentUserId + ' join');
-          this();
+          
         })
         
-
+        this();
         
       }
 
