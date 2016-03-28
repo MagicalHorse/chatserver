@@ -65,8 +65,11 @@ chat.on('connection' ,function(socket){
       socket.disconnect()
       return false;
     }else{
-      Message.buyerUnreadCount(socket.userid , function(err, res){
-        socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unreadcount: res} })
+      // Message.buyerUnreadCount(socket.userid , function(err, res){
+      //   socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unreadcount: res} })
+      // })
+      Message.unreadMessageGroupByRoomid(socket.userid, function(err, res){
+        socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unredmessages: res} })
       })
     }
 
@@ -168,18 +171,21 @@ chat.on('connection' ,function(socket){
 
         redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
         socket.join(socket.roomId);
-        Message.changeRead(socket.roomId)
-
-        // 广播新人加入
-        socket.to(socket.roomId).emit('broadcast newer', room.userName);
+        Message.unreadMessages(socket.roomId, function(err, unread_messages){
+          Message.changeRead(socket.roomId)
+          // 广播新人加入
+          socket.to(socket.roomId).emit('broadcast newer', room.userName);
+          if(callback){
+            callback({action:"join room", type: "success", errcode: 200, data:{unread_messages: unread_messages}})
+          }else{
+            socket.emit("server_notice", {action:"join room", type: "success", errcode: 200, data:{unread_messages: unread_messages}})
+          }
+          console.log(currentUserId + ' join');
+          this();
+        })
         
-        if(callback){
-          callback({action:"join room", type: "success", errcode: 200})
-        }else{
-          socket.emit("server_notice", {action:"join room", type: "success", errcode: 200})
-        }
-        console.log(currentUserId + ' join');
-        this();
+
+        
       }
 
     )//end of step

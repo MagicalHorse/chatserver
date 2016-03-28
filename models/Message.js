@@ -56,6 +56,23 @@ module.exports = function() {
       .exec(callback);
     };
 
+    Message.statics.unreadMessageGroupByRoomid = function(userid, callback) {
+      MessageModel
+      .where('toUserId', userid)
+      .where("messageType", 0)
+      .where("isRead", 0)
+      .group({_id: "$roomId"})
+      .exec(callback);
+    };
+
+    Message.statics.unreadMessages = function(roomId, callback) {
+      MessageModel
+      .where('roomId', roomId)
+      .where("isRead", 0)
+      .sort('creationDate')
+      .exec(callback);
+    };
+
     Message.statics.unreadCount = function(roomid, disconnectTime, callback){
       if (disconnectTime == ''){
         MessageModel
