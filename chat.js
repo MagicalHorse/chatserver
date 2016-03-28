@@ -69,7 +69,7 @@ chat.on('connection' ,function(socket){
       //   socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unreadcount: res} })
       // })
       Message.aggregate([
-          {$match: {toUserId: socket.userid}},
+          {$match: {$and : [{toUserId: parseInt(socket.userid)},  {isRead: 0}]}},
           {$group: {_id: "roomId"}}
         ], function(err, res){
         socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unredmessages: res} })
