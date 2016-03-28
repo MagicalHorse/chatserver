@@ -70,7 +70,7 @@ chat.on('connection' ,function(socket){
       // })
       Message.aggregate([
           {$match: {$and : [{toUserId: parseInt(socket.userid)},  {isRead: 0}]}},
-          {$group: {_id: "roomId"}}
+          {$group: {_id: "$roomId", messages: { $push: "$$ROOT" }}}
         ], function(err, res){
         socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unredmessages: res} })
       })
