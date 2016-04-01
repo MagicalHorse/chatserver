@@ -73,7 +73,7 @@ chat.on('connection' ,function(socket){
           {$group: {_id: "$roomId", messages: { $push: "$$ROOT" }}}
         ], function(err, unredmessages){
           Room.aggregate([
-            {$match: {$and : [{owner: parseInt(socket.userid)},  {isBase: true}]}}
+            {$match: {$and : [{owner: (socket.userid).toString()},  {isBase: true}]}}
             ], function(err, baseroom){
               socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unredmessages: unredmessages, baseroom: baseroom} })
             })
