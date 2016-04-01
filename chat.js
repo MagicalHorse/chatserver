@@ -306,7 +306,7 @@ chat.on('connection' ,function(socket){
                     console.log(err)
                   }
                 })
-                if(room.type == 'private'){
+                // if(room.type == 'private'){
                   eval(room.users).forEach(function(user_id){
                     isonline =  false
                     redis_client.hmget("RoomOnlineUsers_"+socket.roomId, user_id, function(err, res){
@@ -325,7 +325,7 @@ chat.on('connection' ,function(socket){
                       }
                     })
                   })
-                }
+                // }
                 
               }
             })
