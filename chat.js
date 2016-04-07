@@ -269,6 +269,10 @@ chat.on('connection' ,function(socket){
       User.find(msg.fromUserId, function(err, user){
         msg.isRead = 0
         params_message = { sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
+        if(parseInt(msg.fromUserId) == 0){
+          params_message["roomId"] =  msg.roomId
+        }
+
 
         var message = new Message(params_message);
         if(user.length > 0){
