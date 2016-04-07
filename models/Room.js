@@ -11,7 +11,7 @@ module.exports = function() {
         ,isBase           : { type: Boolean }  
         ,Logo             :{ type: String }  
         // type: private / group 私聊/群聊
-        , type            : { type}
+        , type            : { type: String}
         , creationDate    : { type: Date, default: Date.now }
         , messageCount    : {type: Number, default: 0 }
         , usersCount      : {type: Number, default: 0 }
