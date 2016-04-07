@@ -5,20 +5,20 @@ module.exports = function() {
     var Room = new mongoose.Schema({
         //_id 两种方式：customerId_buyerId, groupId
           _id             : { type: String, index: {unique: true} }
-        , title           : { type: String }
-        ,description      : { type: String }
-        , owner           : { type: String }  
-        ,isBase           : { type: Boolean }  
-        ,Logo             :{ type: String }  
+        , title           : { type: String , default: "" }
+        ,description      : { type: String , default: "" }
+        , owner           : { type: String , default: "" }  
+        ,isBase           : { type: Boolean, default: false }  
+        ,Logo             :{ type: String, default: "" }  
         // type: private / group 私聊/群聊
-        , type            : { type: String }
+        , type            : { type: String, default:"" }
         , creationDate    : { type: Date, default: Date.now }
         , messageCount    : {type: Number, default: 0 }
         , usersCount      : {type: Number, default: 0 }
         , users           : { type: String }
         , customer_id: {type: Number, default: 0 }
         , buyer_id: {type: Number, default: 0 }
-        , lastMessage :{}
+        , lastMessage :{ default: {}}
         ,updateTime: { type: Number, default: 0}
     });
 
