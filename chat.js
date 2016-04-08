@@ -208,39 +208,43 @@ chat.on('connection' ,function(socket){
       console.log(msg)
     }
     //自动加入房间
-    if(msg.roomId != null && msg.roomId != socket.roomId){
-      redis_client.hdel("RoomOnlineUsers_"+socket.roomId, socket.userid)
-      socket.leave(socket.roomId);
+    // if(msg.roomId != null && msg.roomId != socket.roomId){
+    //   redis_client.hdel("RoomOnlineUsers_"+socket.roomId, socket.userid)
+    //   socket.leave(socket.roomId);
 
-      socket.roomId = msg.roomId
+    //   socket.roomId = msg.roomId
 
-      Room.exist(socket.roomId, function(err, res){
-        if(res == 0){
-          _room = {}
-          if(socket.roomId.split("_").length == 2){
-            _room = {_id: socket.roomId, users: JSON.stringify(socket.roomId.split("_")), type:'private', customer_id: socket.roomId.split("_")[0], buyer_id: socket.roomId.split("_")[1]}
+    //   Room.exist(socket.roomId, function(err, res){
+    //     if(res == 0){
+    //       _room = {}
+    //       if(socket.roomId.split("_").length == 2){
+    //         _room = {_id: socket.roomId, users: JSON.stringify(socket.roomId.split("_")), type:'private', customer_id: socket.roomId.split("_")[0], buyer_id: socket.roomId.split("_")[1]}
             
-          }else{
-            _room = {_id: socket.roomId, users:JSON.stringify([socket.userid]), type:'group'}
-          }
-          Room.create(_room, function(err, res){
-            })
-        }
-      })
+    //       }else{
+    //         _room = {_id: socket.roomId, users:JSON.stringify([socket.userid]), type:'group'}
+    //       }
+    //       Room.create(_room, function(err, res){
+    //         })
+    //     }
+    //   })
 
-      redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
-      socket.join(socket.roomId);
-      Message.changeRead(socket.roomId)
+    //   redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
+    //   socket.join(socket.roomId);
+    //   Message.changeRead(socket.roomId)
 
-      // 广播新人加入
-      socket.to(socket.roomId).emit('broadcast newer', room.userName);
+    //   // 广播新人加入
+    //   socket.to(socket.roomId).emit('broadcast newer', room.userName);
       
-      if(callback){
-        callback({action:"join room", type: "success", errcode: 200})
-      }else{
-        socket.emit("server_notice", {action:"join room", type: "success", errcode: 200})
-      }
-      console.log(currentUserId + ' join');
+    //   if(callback){
+    //     callback({action:"join room", type: "success", errcode: 200})
+    //   }else{
+    //     socket.emit("server_notice", {action:"join room", type: "success", errcode: 200})
+    //   }
+    //   console.log(currentUserId + ' join');
+    // }
+
+    if(parseInt(msg.fromUserId) == 0){
+      socket.roomId =  msg.roomId
     }
 
     if(socket.roomId==null){
@@ -252,6 +256,8 @@ chat.on('connection' ,function(socket){
       }
       return false
     }
+
+
 
     if(msg.fromUserId == null || msg.toUserId==null || msg.messageType == null){
       console.log("msg.fromUserId == null || msg.toUserId==null || msg.messageType == null")
@@ -268,9 +274,6 @@ chat.on('connection' ,function(socket){
       //获取发送者用户信息
       User.find(msg.fromUserId, function(err, user){
         msg.isRead = 0
-        if(parseInt(msg.fromUserId) == 0){
-          socket.roomId =  msg.roomId
-        }
         params_message = { sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
         var message = new Message(params_message);
         if(user.length > 0){
