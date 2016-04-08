@@ -314,8 +314,12 @@ chat.on('connection' ,function(socket){
                 })
                 // if(room.type == 'private'){
                   eval(room.users).forEach(function(user_id){
+
                     isonline =  false
                     redis_client.hmget("RoomOnlineUsers_"+socket.roomId, user_id, function(err, res){
+                      console.log("user_id:   ")
+                      console.log(user_id)
+                      console.log(res[0])
                       isonline =  res[0]
                       if(socket.userid != user_id && isonline != 'true' ){
                         redis_client.get("login"+user_id, function(err, reply){
