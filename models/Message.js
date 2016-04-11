@@ -60,6 +60,7 @@ module.exports = function() {
       MessageModel
       .where('roomId', roomId)
       .where("isRead", 0)
+      .where("messageType", 0)
       .sort('creationDate')
       .exec(callback);
     };
