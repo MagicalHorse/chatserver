@@ -182,7 +182,7 @@ chat.on('connection' ,function(socket){
           Message.changeRead(socket.roomId)
           // 广播新人加入
           socket.to(socket.roomId).emit('broadcast newer', room.userName);
-          room_users = {}
+          room_users = []
           if(socket.roomId.split("_").length == 2){
             User.aggregate([{$match: {$or : [{userId: parseInt(socket.roomId.split("_")[0])},  {userId: parseInt(socket.roomId.split("_")[1])}]}}], function(err, res){
               room_users = res
