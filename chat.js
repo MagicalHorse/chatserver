@@ -288,9 +288,9 @@ chat.on('connection' ,function(socket){
       //获取发送者用户信息
       User.find(msg.fromUserId, function(err, user){
         msg.isRead = 0
-        if(msg.type === '' || msg.type ==  null)
+        if( msg.type ==  null)
         {
-          msg.type = "text"
+          msg.type = ""
         }
         params_message = { sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
 

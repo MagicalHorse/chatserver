@@ -17,7 +17,7 @@ module.exports = function() {
       , userIp      : String
       , body        : String
       // notice 通知类消息
-      , type        : { type: String, default: "text" }
+      , type        : { type: String, default: "" }
       , productId   : Number 
       , sendtype    : Number
       , data : {}
