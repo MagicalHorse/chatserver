@@ -71,7 +71,7 @@ chat.on('connection' ,function(socket){
       Message.aggregate([
           {$match: {$and : [{toUserId: parseInt(socket.userid)},  {isRead: 0},{messageType: 0}]}},
           {$group: {_id: "$roomId", messages: { $push: "$$ROOT" }}},
-          {$sort:  {creationDate: 1}}
+          {$sort:  {creationDate: -1}}
         ], function(err, unredmessages){
           Room.aggregate([
             {$match: {$and : [{owner: (socket.userid).toString()},  {isBase: true}]}}
@@ -186,7 +186,7 @@ chat.on('connection' ,function(socket){
           room_users = []
           if(socket.roomId.split("_").length == 2){
             User.aggregate([{$match: {$or : [{userId: parseInt(socket.roomId.split("_")[0])},  {userId: parseInt(socket.roomId.split("_")[1])}]}}, 
-              {$sort:  {creationDate: 1}}
+              {$sort:  {creationDate: -1}}
               ], function(err, res){
               room_users = res
               if(callback){
