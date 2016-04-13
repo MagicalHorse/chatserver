@@ -46,6 +46,7 @@ io.adapter(redis_adapter({ pubClient: redis_client, subClient: sub }));
 var chat = io.of('/chat');
 
 chat.on('connection' ,function(socket){
+  socket.manager.transports[socket.id].socket.setTimeout(1000)
   var currentUserId = socket.handshake.query.userid,
       roomId = '',
       roomNow = '',
