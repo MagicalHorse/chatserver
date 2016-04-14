@@ -185,8 +185,7 @@ chat.on('connection' ,function(socket){
           socket.to(socket.roomId).emit('broadcast newer', room.userName);
           room_users = []
           if(socket.roomId.split("_").length == 2){
-            User.aggregate([{$match: {$or : [{userId: parseInt(socket.roomId.split("_")[0])},  {userId: parseInt(socket.roomId.split("_")[1])}]}}, 
-              {$sort:  {creationDate: -1}}
+            User.aggregate([{$match: {$or : [{userId: parseInt(socket.roomId.split("_")[0])},  {userId: parseInt(socket.roomId.split("_")[1])}]}}
               ], function(err, res){
               room_users = res
               if(callback){
