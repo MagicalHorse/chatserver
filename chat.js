@@ -180,8 +180,12 @@ chat.on('connection' ,function(socket){
         redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
         socket.join(socket.roomId);
         State.of(socket.userid, socket.roomId, function(err, state){
+          disconnectDate = new Date("1970-01-01T00:00:00.000Z")
+          if(state > 0){
+            disconnectDate = state[0].disconnectDate
+          }
           Message.aggregate([
-            {$match: {$and : [{roomId: parseInt(socket.roomId)}, {creationDate:{$gt: state.disconnectDate } }]}},
+            {$match: {$and : [{roomId: parseInt(socket.roomId)}, {creationDate:{$gt: disconnectDate } }]}},
             {$sort:  {creationDate: -1}}
             ], function(err, unread_messages){
             room_users = []
