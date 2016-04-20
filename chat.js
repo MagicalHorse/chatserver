@@ -183,7 +183,7 @@ chat.on('connection' ,function(socket){
           Message.aggregate([
             {$match: {$and : [{roomId: parseInt(socket.roomId)}, {creationDate:{$gt: state.disconnectDate } }]}},
             {$sort:  {creationDate: -1}}
-            ], function(err, res){
+            ], function(err, unread_messages){
             room_users = []
             if(socket.roomId.split("_").length == 2){
               User.aggregate([{$match: {$or : [{userId: parseInt(socket.roomId.split("_")[0])},  {userId: parseInt(socket.roomId.split("_")[1])}]}}
