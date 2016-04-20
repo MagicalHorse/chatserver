@@ -179,32 +179,36 @@ chat.on('connection' ,function(socket){
 
         redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
         socket.join(socket.roomId);
-        Message.unreadMessages(socket.roomId, function(err, unread_messages){
-          Message.changeRead(socket.roomId)
-          // 广播新人加入
-          socket.to(socket.roomId).emit('broadcast newer', room.userName);
-          room_users = []
-          if(socket.roomId.split("_").length == 2){
-            User.aggregate([{$match: {$or : [{userId: parseInt(socket.roomId.split("_")[0])},  {userId: parseInt(socket.roomId.split("_")[1])}]}}
-              ], function(err, res){
-              room_users = res
+        State.of(socket.userid, socket.roomId, function(err, state){
+          Message.aggregate([
+            {$match: {$and : [{roomId: parseInt(socket.roomId)}, {creationDate:{$gt: state.disconnectDate } }]}},
+            {$sort:  {creationDate: -1}}
+            ], function(err, res){
+            room_users = []
+            if(socket.roomId.split("_").length == 2){
+              User.aggregate([{$match: {$or : [{userId: parseInt(socket.roomId.split("_")[0])},  {userId: parseInt(socket.roomId.split("_")[1])}]}}
+                ], function(err, res){
+                room_users = res
+                if(callback){
+                  callback({action:"join room", type: "success", errcode: 200, data:{unread_messages: unread_messages, room_users: room_users}})
+                }else{
+                  socket.emit("server_notice", {action:"join room", type: "success", errcode: 200, data:{unread_messages: unread_messages, room_users: room_users}})
+                }
+                console.log(currentUserId + ' join');
+              })
+            }else{
               if(callback){
                 callback({action:"join room", type: "success", errcode: 200, data:{unread_messages: unread_messages, room_users: room_users}})
               }else{
                 socket.emit("server_notice", {action:"join room", type: "success", errcode: 200, data:{unread_messages: unread_messages, room_users: room_users}})
               }
               console.log(currentUserId + ' join');
-            })
-          }else{
-            if(callback){
-              callback({action:"join room", type: "success", errcode: 200, data:{unread_messages: unread_messages, room_users: room_users}})
-            }else{
-              socket.emit("server_notice", {action:"join room", type: "success", errcode: 200, data:{unread_messages: unread_messages, room_users: room_users}})
             }
-            console.log(currentUserId + ' join');
-          }
+          })
           
-          
+          Message.changeRead(socket.roomId)
+          // 广播新人加入
+          socket.to(socket.roomId).emit('broadcast newer', room.userName);
         })
         
         this();
