@@ -36,7 +36,7 @@ app.use(bodyParser.json());
 
 var server = http.createServer(app)//原生Http服务
 server.listen(config_env.socket.port)
-var io = require('socket.io')(server, {pingTimeout: 20000, pingInterval:10000});//Socket.io服务
+var io = require('socket.io')(server, {pingTimeout: 1000, pingInterval:500});//Socket.io服务
 
 
 // var pub = redis.createClient(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
