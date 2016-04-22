@@ -36,7 +36,7 @@ app.use(bodyParser.json());
 
 var server = http.createServer(app)//原生Http服务
 server.listen(config_env.socket.port)
-var io = require('socket.io')(server, {pingTimeout: 1000, pingInterval:500});//Socket.io服务
+var io = require('socket.io')(server, {pingTimeout: 1000, pingInterval:400});//Socket.io服务
 
 
 // var pub = redis.createClient(config_env.redis.port, config_env.redis.host, { auth_pass: config_env.redis.pwd});
@@ -72,11 +72,11 @@ chat.on('connection' ,function(socket){
           {$match: {$and : [{toUserId: parseInt(socket.userid)},  {isRead: 0},{messageType: 0}]}},
           {$group: {_id: "$roomId", messages: { $push: "$$ROOT" }}},
           {$sort:  {creationDate: -1}}
-        ], function(err, unredmessages){
+        ], function(err, unread_messages){
           Room.aggregate([
             {$match: {$and : [{owner: (socket.userid).toString()},  {isBase: true}]}}
             ], function(err, baseroom){
-              socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unredmessages: unredmessages, baseroom: baseroom} })
+              socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unread_messages: unread_messages, baseroom: baseroom} })
             })
       })
     }
