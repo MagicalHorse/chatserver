@@ -180,11 +180,19 @@ chat.on('connection' ,function(socket){
         redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
         socket.join(socket.roomId);
         State.of(socket.userid, socket.roomId, function(err, state){
-          Message.aggregate( [
-            {$match: {$and : [{roomId: socket.roomId}, {creationDate:{$gt: state[0].disconnectDate} }]}},
-            {$sort:  {creationDate: -1}}
-            ]
-            , function(err, unread_messages){
+          var search = []
+          if(state.length > 0){
+            search =[
+                    {$match: {$and : [{roomId: socket.roomId}, {creationDate:{$gt: state[0].disconnectDate} }]}},
+                    {$sort:  {creationDate: -1}}
+                  ]
+          }else{
+            search =[
+                      {$match: {$and : [{roomId: socket.roomId}]}},
+                      {$sort:  {creationDate: -1}}
+                  }
+          }
+          Message.aggregate( search, function(err, unread_messages){
             room_users = []
             if(socket.roomId.split("_").length == 2){
               User.aggregate([{$match: {$or : [{userId: parseInt(socket.roomId.split("_")[0])},  {userId: parseInt(socket.roomId.split("_")[1])}]}}
