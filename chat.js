@@ -190,7 +190,7 @@ chat.on('connection' ,function(socket){
             search =[
                       {$match: {$and : [{roomId: socket.roomId}]}},
                       {$sort:  {creationDate: -1}}
-                  }
+                  ]
           }
           Message.aggregate( search, function(err, unread_messages){
             room_users = []
