@@ -75,7 +75,7 @@ chat.on('connection' ,function(socket){
         ], function(err, unread_messages){
           Room.aggregate([
             {$match: {$and : [{owner: (socket.userid).toString()},  {isBase: true}]}},
-            {$project: {Logo: 1,  lastMessage: 1, fromUserId: 1, toUserId: 1, body:1}}
+            {$project: {Logo: 1,  lastMessage:{creationDate: 1, fromUserId: 1, toUserId: 1, body:1}}}
             ], function(err, baseroom){
               socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unread_messages: unread_messages, baseroom: baseroom} })
             })
