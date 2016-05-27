@@ -229,6 +229,7 @@ chat.on('connection' ,function(socket){
 
 
   });
+
   socket.on('sendMessage', function(msg, callback){
     if(debug == true){
       console.log("socketid -> "+ socket.id)
@@ -237,41 +238,7 @@ chat.on('connection' ,function(socket){
       console.log("data->   ")
       console.log(msg)
     }
-    //自动加入房间
-    // if(msg.roomId != null && msg.roomId != socket.roomId){
-    //   redis_client.hdel("RoomOnlineUsers_"+socket.roomId, socket.userid)
-    //   socket.leave(socket.roomId);
 
-    //   socket.roomId = msg.roomId
-
-    //   Room.exist(socket.roomId, function(err, res){
-    //     if(res == 0){
-    //       _room = {}
-    //       if(socket.roomId.split("_").length == 2){
-    //         _room = {_id: socket.roomId, users: JSON.stringify(socket.roomId.split("_")), type:'private', customer_id: socket.roomId.split("_")[0], buyer_id: socket.roomId.split("_")[1]}
-            
-    //       }else{
-    //         _room = {_id: socket.roomId, users:JSON.stringify([socket.userid]), type:'group'}
-    //       }
-    //       Room.create(_room, function(err, res){
-    //         })
-    //     }
-    //   })
-
-    //   redis_client.hmset("RoomOnlineUsers_"+socket.roomId, currentUserId, true)
-    //   socket.join(socket.roomId);
-    //   Message.changeRead(socket.roomId)
-
-    //   // 广播新人加入
-    //   socket.to(socket.roomId).emit('broadcast newer', room.userName);
-      
-    //   if(callback){
-    //     callback({action:"join room", type: "success", errcode: 200})
-    //   }else{
-    //     socket.emit("server_notice", {action:"join room", type: "success", errcode: 200})
-    //   }
-    //   console.log(currentUserId + ' join');
-    // }
 
     if(parseInt(msg.fromUserId) == 0){
       socket.roomId =  msg.roomId
@@ -308,7 +275,11 @@ chat.on('connection' ,function(socket){
         {
           msg.type = ""
         }
-        params_message = { sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
+        var _systemInsteadMessage = 0
+        if(socket.userid == 0 && msg.fromUserId != 0){
+          _systemInsteadMessage = 1
+        }
+        params_message = {systemInsteadMessage: _systemInsteadMessage, sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
         if(parseInt(msg.fromUserId) == 0){
           params_message["roomId"] =  msg.roomId
         }
