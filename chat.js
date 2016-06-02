@@ -317,6 +317,7 @@ chat.on('connection' ,function(socket){
               socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
             }
             Room.find(socket.roomId, function(err, res){
+
               room = res[0]
               if(room){
                 room.update({updateTime:  (new Date()).valueOf(), lastMessage: message}, function(err){
@@ -324,6 +325,10 @@ chat.on('connection' ,function(socket){
                     console.log(err)
                   }
                 })
+                if(room.type == 'private'){
+                  redis_client.sadd(config_env.redis.message_queue, JSON.stringify(message))
+                }
+
                 // if(room.type == 'private'){
                   eval(room.users).forEach(function(user_id){
 
@@ -339,9 +344,9 @@ chat.on('connection' ,function(socket){
                             // chat.connected[reply].emit("server_notice", {action:"new message", type: "success", message:"new message", data: message})
                             chat.connected[reply].emit("room message", message)
                           }else{
-                            if(room.type == 'private'){
-                              redis_client.sadd(config_env.redis.message_queue, JSON.stringify(message))
-                            }
+                            // if(room.type == 'private'){
+                            //   redis_client.sadd(config_env.redis.message_queue, JSON.stringify(message))
+                            // }
                           }
                         })
                       }
