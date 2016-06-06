@@ -22,6 +22,7 @@ module.exports = function() {
       , sendtype    : Number //买手发送 0， 顾客发送 1
       , data : {}
       , user : {}
+      , to_user_info : {}
       , systemInsteadMessage: {type: Number, index: true , default: 0} //1 系统代发， 0 用户自己发送
       , creationDate        : { type: Date, default: Date.now }
     },
