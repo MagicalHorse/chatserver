@@ -240,18 +240,18 @@ chat.on('connection' ,function(socket){
     }
 
 
-    if(parseInt(socket.userid) == 0){
-      socket.roomId =  msg.roomId
-      // if(parseInt(msg.fromUserId) != 0){
-      //   if(parseInt(msg.fromUserId) <  parseInt(msg.toUserId)){
-      //     socket.roomId = msg.fromUserId +'_'+ msg.toUserId
-      //   }else{
-      //     socket.roomId = msg.toUserId +'_'+ msg.fromUserId
-      //   }
-      // }
-    }
+    // if(parseInt(socket.userid) == 0){
+    //   socket.roomId =  msg.roomId
+    //   // if(parseInt(msg.fromUserId) != 0){
+    //   //   if(parseInt(msg.fromUserId) <  parseInt(msg.toUserId)){
+    //   //     socket.roomId = msg.fromUserId +'_'+ msg.toUserId
+    //   //   }else{
+    //   //     socket.roomId = msg.toUserId +'_'+ msg.fromUserId
+    //   //   }
+    //   // }
+    // }
 
-    if(socket.roomId==null){
+    if(socket.roomId==null && socket.userid != 0 && socket.roomId != msg.roomId){
       console.log("socket.roomId==null")
       if(callback){
         callback({action:"sendMessage", type: "failed", message: "please call join room first" , errcode: 403})
@@ -288,7 +288,7 @@ chat.on('connection' ,function(socket){
           if(socket.userid == 0 && msg.fromUserId != 0){
             _systemInsteadMessage = 1
           }
-          params_message = {systemInsteadMessage: _systemInsteadMessage, sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
+          params_message = {systemInsteadMessage: _systemInsteadMessage, sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: msg.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
           if(parseInt(msg.fromUserId) == 0){
             params_message["roomId"] =  msg.roomId
           }
