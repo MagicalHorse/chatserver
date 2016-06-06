@@ -242,13 +242,13 @@ chat.on('connection' ,function(socket){
 
     if(parseInt(socket.userid) == 0){
       socket.roomId =  msg.roomId
-      if(parseInt(msg.fromUserId) != 0){
-        if(parseInt(msg.fromUserId) <  parseInt(msg.toUserId)){
-          socket.roomId = msg.fromUserId +'_'+ msg.toUserId
-        }else{
-          socket.roomId = msg.toUserId +'_'+ msg.fromUserId
-        }
-      }
+      // if(parseInt(msg.fromUserId) != 0){
+      //   if(parseInt(msg.fromUserId) <  parseInt(msg.toUserId)){
+      //     socket.roomId = msg.fromUserId +'_'+ msg.toUserId
+      //   }else{
+      //     socket.roomId = msg.toUserId +'_'+ msg.fromUserId
+      //   }
+      // }
     }
 
     if(socket.roomId==null){
