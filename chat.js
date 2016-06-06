@@ -276,95 +276,103 @@ chat.on('connection' ,function(socket){
     
     if (msg.body.length > 0){
       //获取发送者用户信息
-      User.find(msg.fromUserId, function(err, user){
-        msg.isRead = 0
-        if( msg.type ==  null)
-        {
-          msg.type = ""
-        }
-        var _systemInsteadMessage = 0
-        if(socket.userid == 0 && msg.fromUserId != 0){
-          _systemInsteadMessage = 1
-        }
-        params_message = {systemInsteadMessage: _systemInsteadMessage, sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
-        if(parseInt(msg.fromUserId) == 0){
-          params_message["roomId"] =  msg.roomId
-        }
+      User.find(msg.toUserId, function(err, to_user_info){
 
-        var message = new Message(params_message);
-        if(user.length > 0){
-          message["user"] = user[0]
-        }else{
-          message["user"] = {}
-        }
-        message.save(function(err) {
-          if(err) {
-            console.log(err);
-            if(callback){
-              callback({action: "sendMessage", type:"failed", message: err, errcode: 405})
-            }else{
-              socket.emit("server_notice", {action: "sendMessage", type:"failed", message: err, errcode: 405})
-            }
-          } else {
-            if(msg.messageType == 0){
-              redis_client.hmget("RoomOnlineUsers_"+socket.roomId, msg.toUserId, function(err, res){
-                if(res[0] == 'true'){
-                  message.isRead = 1 
-                  message.save()
+        User.find(msg.fromUserId, function(err, user){
+          msg.isRead = 0
+          if( msg.type ==  null)
+          {
+            msg.type = ""
+          }
+          var _systemInsteadMessage = 0
+          if(socket.userid == 0 && msg.fromUserId != 0){
+            _systemInsteadMessage = 1
+          }
+          params_message = {systemInsteadMessage: _systemInsteadMessage, sendtype: msg.sendtype, fromUserId: msg.fromUserId, toUserId: msg.toUserId, roomId: socket.roomId, userName: msg.userName, type: msg.type, productId: msg.productId, body: msg.body, messageType: msg.messageType, isRead:msg.isRead, data: msg.data }
+          if(parseInt(msg.fromUserId) == 0){
+            params_message["roomId"] =  msg.roomId
+          }
+
+          var message = new Message(params_message);
+          if(user.length > 0){
+            message["user"] = user[0]
+          }else{
+            message["user"] = {}
+          }
+          if(to_user_info.length > 0){
+            message["to_user_info"] = to_user_info[0]
+          }else{
+            message["to_user_info"] = {}
+          }
+          message.save(function(err) {
+            if(err) {
+              console.log(err);
+              if(callback){
+                callback({action: "sendMessage", type:"failed", message: err, errcode: 405})
+              }else{
+                socket.emit("server_notice", {action: "sendMessage", type:"failed", message: err, errcode: 405})
+              }
+            } else {
+              if(msg.messageType == 0){
+                redis_client.hmget("RoomOnlineUsers_"+socket.roomId, msg.toUserId, function(err, res){
+                  if(res[0] == 'true'){
+                    message.isRead = 1 
+                    message.save()
+                  }
+                })
+              }
+
+
+              socket.to(socket.roomId).emit('new message', message);//发送给在当前房间用户]
+
+              if(callback){
+                callback({action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
+              }else{
+                socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
+              }
+              Room.find(socket.roomId, function(err, res){
+
+                room = res[0]
+                if(room){
+                  room.update({updateTime:  (new Date()).valueOf(), lastMessage: message}, function(err){
+                    if(err && debug == true){
+                      console.log(err)
+                    }
+                  })
+                  if(room.type == 'private'){
+                    redis_client.sadd(config_env.redis.message_queue, JSON.stringify(message))
+                  }
+
+                  // if(room.type == 'private'){
+                    eval(room.users).forEach(function(user_id){
+
+                      isonline =  false
+                      redis_client.hmget("RoomOnlineUsers_"+socket.roomId, user_id, function(err, res){
+                        console.log("user_id:   ")
+                        console.log(user_id)
+                        console.log(res[0])
+                        isonline =  res[0]
+                        if(socket.userid != user_id && isonline != 'true' ){
+                          redis_client.get("login"+user_id, function(err, reply){
+                            if(reply != null && chat.connected[reply]!=null){
+                              // chat.connected[reply].emit("server_notice", {action:"new message", type: "success", message:"new message", data: message})
+                              chat.connected[reply].emit("room message", message)
+                            }else{
+                              // if(room.type == 'private'){
+                              //   redis_client.sadd(config_env.redis.message_queue, JSON.stringify(message))
+                              // }
+                            }
+                          })
+                        }
+                      })
+                    })
+                  // }
+                  
                 }
               })
             }
-
-
-            socket.to(socket.roomId).emit('new message', message);//发送给在当前房间用户]
-
-            if(callback){
-              callback({action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
-            }else{
-              socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
-            }
-            Room.find(socket.roomId, function(err, res){
-
-              room = res[0]
-              if(room){
-                room.update({updateTime:  (new Date()).valueOf(), lastMessage: message}, function(err){
-                  if(err && debug == true){
-                    console.log(err)
-                  }
-                })
-                if(room.type == 'private'){
-                  redis_client.sadd(config_env.redis.message_queue, JSON.stringify(message))
-                }
-
-                // if(room.type == 'private'){
-                  eval(room.users).forEach(function(user_id){
-
-                    isonline =  false
-                    redis_client.hmget("RoomOnlineUsers_"+socket.roomId, user_id, function(err, res){
-                      console.log("user_id:   ")
-                      console.log(user_id)
-                      console.log(res[0])
-                      isonline =  res[0]
-                      if(socket.userid != user_id && isonline != 'true' ){
-                        redis_client.get("login"+user_id, function(err, reply){
-                          if(reply != null && chat.connected[reply]!=null){
-                            // chat.connected[reply].emit("server_notice", {action:"new message", type: "success", message:"new message", data: message})
-                            chat.connected[reply].emit("room message", message)
-                          }else{
-                            // if(room.type == 'private'){
-                            //   redis_client.sadd(config_env.redis.message_queue, JSON.stringify(message))
-                            // }
-                          }
-                        })
-                      }
-                    })
-                  })
-                // }
-                
-              }
-            })
-          }
-        });
+          });
+        })     
       })
     }
   });
