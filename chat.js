@@ -239,6 +239,11 @@ chat.on('connection' ,function(socket){
       console.log(msg)
     }
 
+    if(parseInt(socket.userid) != 0){
+      msg.roomId = socket.roomId
+    }
+
+
     if(socket.roomId==null && socket.userid != 0 && socket.roomId != msg.roomId){
       console.log("socket.roomId==null")
       if(callback){
