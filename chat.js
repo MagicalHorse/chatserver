@@ -82,7 +82,7 @@ chat.on('connection' ,function(socket){
       // })
       Message.aggregate([
           {$match: {$or : [{$and: [{toUserId: parseInt(socket.userid)},  {isRead: 0},{messageType: 0}]},{$and: [{fromUserId: parseInt(socket.userid)},  {systemInsteadMessage: 1}, {systemInsteadMessageIsRead: 0}]}
-          ]},
+          ]}},
           {$group: {_id: "$roomId", messages: { $push: "$$ROOT" }}},
           {$sort:  {creationDate: -1}}
         ], function(err, unread_messages){
