@@ -318,6 +318,14 @@ chat.on('connection' ,function(socket){
 
               socket.to(msg.roomId).emit('new message', message);//发送给在当前房间用户]
 
+              if(_systemInsteadMessage == 1){
+                redis_client.get("login"+msg.fromUserId, function(err, reply){
+                  if(reply != null && chat.connected[reply]!=null){
+                    chat.connected[reply].emit("room message", message)
+                  }
+                })
+              }
+
               if(callback){
                 callback({action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
               }else{
