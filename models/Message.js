@@ -24,6 +24,7 @@ module.exports = function() {
       , user : {}
       , to_user_info : {}
       , systemInsteadMessage: {type: Number, index: true , default: 0} //1 系统代发， 0 用户自己发送
+      , systemInsteadMessageIsRead: {type: Number, index: true , default: 0} //1 代发已读 0 代发未读
       , creationDate        : { type: Date, default: Date.now }
     },
     {safe: undefined});

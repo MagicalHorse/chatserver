@@ -68,8 +68,21 @@ chat.on('connection' ,function(socket){
       // Message.buyerUnreadCount(socket.userid , function(err, res){
       //   socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unreadcount: res} })
       // })
+      // Message.aggregate([
+      //     {$match: {$and : [{toUserId: parseInt(socket.userid)},  {isRead: 0},{messageType: 0}]}},
+      //     {$group: {_id: "$roomId", messages: { $push: "$$ROOT" }}},
+      //     {$sort:  {creationDate: -1}}
+      //   ], function(err, unread_messages){
+      //     Room.aggregate([
+      //       {$match: {$and : [{owner: (socket.userid).toString()},  {isBase: true}]}},
+      //       {$project: {Logo: 1,  lastMessage:{creationDate: 1, fromUserId: 1, toUserId: 1, body:1}}}
+      //       ], function(err, baseroom){
+      //         socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unread_messages: unread_messages, baseroom: baseroom} })
+      //       })
+      // })
       Message.aggregate([
-          {$match: {$and : [{toUserId: parseInt(socket.userid)},  {isRead: 0},{messageType: 0}]}},
+          {$match: {$or : [{$and: [{toUserId: parseInt(socket.userid)},  {isRead: 0},{messageType: 0}]},{$and: [{fromUserId: parseInt(socket.userid)},  {systemInsteadMessage: 1}, {systemInsteadMessageIsRead: 0}]}
+          ]},
           {$group: {_id: "$roomId", messages: { $push: "$$ROOT" }}},
           {$sort:  {creationDate: -1}}
         ], function(err, unread_messages){
