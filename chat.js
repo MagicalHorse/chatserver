@@ -239,18 +239,6 @@ chat.on('connection' ,function(socket){
       console.log(msg)
     }
 
-
-    // if(parseInt(socket.userid) == 0){
-    //   socket.roomId =  msg.roomId
-    //   // if(parseInt(msg.fromUserId) != 0){
-    //   //   if(parseInt(msg.fromUserId) <  parseInt(msg.toUserId)){
-    //   //     socket.roomId = msg.fromUserId +'_'+ msg.toUserId
-    //   //   }else{
-    //   //     socket.roomId = msg.toUserId +'_'+ msg.fromUserId
-    //   //   }
-    //   // }
-    // }
-
     if(socket.roomId==null && socket.userid != 0 && socket.roomId != msg.roomId){
       console.log("socket.roomId==null")
       if(callback){
@@ -314,7 +302,7 @@ chat.on('connection' ,function(socket){
               }
             } else {
               if(msg.messageType == 0){
-                redis_client.hmget("RoomOnlineUsers_"+socket.roomId, msg.toUserId, function(err, res){
+                redis_client.hmget("RoomOnlineUsers_"+msg.roomId, msg.toUserId, function(err, res){
                   if(res[0] == 'true'){
                     message.isRead = 1 
                     message.save()
@@ -323,14 +311,14 @@ chat.on('connection' ,function(socket){
               }
 
 
-              socket.to(socket.roomId).emit('new message', message);//发送给在当前房间用户]
+              socket.to(msg.roomId).emit('new message', message);//发送给在当前房间用户]
 
               if(callback){
                 callback({action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
               }else{
                 socket.emit("server_notice", {action:"sendMessage", type: "success", message: "", data: message, params: msg, errcode: 406 })
               }
-              Room.find(socket.roomId, function(err, res){
+              Room.find(msg.roomId, function(err, res){
 
                 room = res[0]
                 if(room){
@@ -347,7 +335,7 @@ chat.on('connection' ,function(socket){
                     eval(room.users).forEach(function(user_id){
 
                       isonline =  false
-                      redis_client.hmget("RoomOnlineUsers_"+socket.roomId, user_id, function(err, res){
+                      redis_client.hmget("RoomOnlineUsers_"+msg.roomId, user_id, function(err, res){
                         console.log("user_id:   ")
                         console.log(user_id)
                         console.log(res[0])
