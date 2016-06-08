@@ -93,6 +93,9 @@ chat.on('connection' ,function(socket){
               socket.emit("server_notice", {action:"login", type: "success", errcode: 200, data: {unread_messages: unread_messages, baseroom: baseroom} })
             })
       })
+
+      Message.update({fromUserId: parseInt(socket.userid), systemInsteadMessage: 1, systemInsteadMessageIsRead: 0}, {systemInsteadMessageIsRead: 1}, { multi: true }, function(err, result){
+      })      
     }
 
     redis_client.get("login"+socket.handshake.query.userid, function(err, reply){
