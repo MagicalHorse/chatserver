@@ -255,12 +255,10 @@ chat.on('connection' ,function(socket){
       console.log(msg)
     }
 
-    if(parseInt(socket.userid) != 0){
-      msg.roomId = socket.roomId
-    }
 
 
-    if(socket.roomId==null && socket.userid != 0 && socket.roomId != msg.roomId){
+
+    if( (socket.roomId==null || socket.roomId != msg.roomId) && parseInt(socket.userid) != 0){
       console.log("socket.roomId==null")
       if(callback){
         callback({action:"sendMessage", type: "failed", message: "please call join room first" , errcode: 403})
@@ -269,7 +267,6 @@ chat.on('connection' ,function(socket){
       }
       return false
     }
-
 
 
     if(msg.fromUserId == null || msg.toUserId==null || msg.messageType == null){
