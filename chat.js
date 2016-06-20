@@ -255,7 +255,9 @@ chat.on('connection' ,function(socket){
       console.log(msg)
     }
 
-
+    if(msg.roomId == null && parseInt(socket.userid) != 0 && socket.roomId !=null){
+      msg.roomId = socket.roomId
+    }
 
 
     if( (socket.roomId==null || socket.roomId != msg.roomId) && parseInt(socket.userid) != 0){
