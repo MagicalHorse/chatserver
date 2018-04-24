@@ -8,13 +8,23 @@ module.exports = function() {
       , fromUserId  : { type: Number, index: true }
       // 群聊时 toUserId 为空
       , toUserId  : { type: Number, index: true }
+      , messageType : { type: Number, index: true }
+      // 0 私聊， 1群聊
+      , isRead : { type: Number, index: true, default: 0 }
+      //0 未读， 1 已读
       // 发消息者的name
       , userName    : String
       , userIp      : String
       , body        : String
       // notice 通知类消息
-      , type        : String
-      , productId   : Number
+      , type        : { type: String, default: "" }
+      , productId   : Number 
+      , sendtype    : Number //买手发送 0， 顾客发送 1
+      , data : {}
+      , user : {}
+      , to_user_info : {}
+      , systemInsteadMessage: {type: Number, index: true , default: 0} //1 系统代发， 0 用户自己发送
+      , systemInsteadMessageIsRead: {type: Number, index: true , default: 0} //1 代发已读 0 代发未读
       , creationDate        : { type: Date, default: Date.now }
     },
     {safe: undefined});
@@ -34,10 +44,26 @@ module.exports = function() {
       }
     };
 
+    Message.statics.changeRead = function(roomid){
+      console.log("changeRead : "+ roomid)
+      MessageModel.update({roomId: roomid}, {isRead: 1}, { multi: true }, function(err, result){
+      })
+    }
+
+
     // 返回全部数据，慎用
     Message.statics.all = function(roomId, callback) {
       MessageModel
       .where('roomId', roomId)
+      .sort('creationDate')
+      .exec(callback);
+    };
+
+    Message.statics.unreadMessages = function(roomId, callback) {
+      MessageModel
+      .where('roomId', roomId)
+      .where("isRead", 0)
+      .where("messageType", 0)
       .sort('creationDate')
       .exec(callback);
     };
@@ -57,19 +83,12 @@ module.exports = function() {
       }
     }
 
-    Message.statics.buyerUnreadCount = function(buyerid, disconnectTime, callback){
-      if (disconnectTime == ''){
-        MessageModel
-        .where('toUserId', buyerid)
-        .count({})
-        .exec(callback);
-      }else{
-        MessageModel
-        .where('toUserId', buyerid)
-        .where('creationDate').gte(disconnectTime)
-        .count({})
-        .exec(callback);
-      }
+    Message.statics.buyerUnreadCount = function(buyerid, callback){
+      MessageModel
+      .where('toUserId', buyerid)
+      .where('isRead', 0)
+      .count({})
+      .exec(callback);
     }
 
     Message.statics.last = function(roomid, Num, callback) {

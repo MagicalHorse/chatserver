@@ -6,13 +6,20 @@ module.exports = function() {
         //_id 两种方式：customerId_buyerId, groupId
           _id             : { type: String, index: {unique: true} }
         , title           : { type: String }
-        , owner           : { type: String }
+        ,description      : { type: String }
+        , owner           : { type: String }  
+        ,isBase           : { type: Boolean }  
+        ,Logo             :{ type: String }  
         // type: private / group 私聊/群聊
-        , type            : { type: String }
+        , type            : { type: String}
         , creationDate    : { type: Date, default: Date.now }
         , messageCount    : {type: Number, default: 0 }
         , usersCount      : {type: Number, default: 0 }
-        , users           : [{ type: String }]
+        , users           : { type: String }
+        , customer_id: {type: Number, default: 0 }
+        , buyer_id: {type: Number, default: 0 }
+        , lastMessage :{}
+        ,updateTime: { type: Number, default: 0}
     });
 
     Room.statics.exist = function(roomid, callback) {
